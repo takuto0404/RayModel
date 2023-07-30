@@ -1,4 +1,3 @@
-using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
@@ -22,7 +21,7 @@ namespace Default
             _playerInputs.Dispose();
         }
 
-        private async UniTask MouseClickAsync(CancellationToken ct)
+        public async UniTask MouseClickAsync(CancellationToken ct)
         {
             await UniTask.WaitWhile(() => !_clicking, cancellationToken: ct);
             _clicking = false;

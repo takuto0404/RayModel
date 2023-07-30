@@ -241,6 +241,7 @@ GameObject:
   m_Component:
   - component: {fileID: 420932841}
   - component: {fileID: 420932842}
+  - component: {fileID: 420932843}
   m_Layer: 0
   m_Name: PlayerManager
   m_TagString: Untagged
@@ -275,7 +276,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a03b556762f845cfa8163683d351732f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  canvasTransform: {fileID: 591880353}
+  linePrefab: {fileID: 330689532770059947, guid: 7fda9bb2007ef4bd690634d2632b7359, type: 3}
   speed: 0.1
+--- !u!114 &420932843
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 420932840}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 249f7a78be574fafafb386ec93f58dc0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -615,7 +630,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 821700740}
-  - component: {fileID: 821700737}
+  - component: {fileID: 821700741}
   m_Layer: 0
   m_Name: GridManager
   m_TagString: Untagged
@@ -623,22 +638,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &821700737
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 821700735}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c258423cac5c475caa7616fee33fdae3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  lineRenderer: {fileID: 2333722863418321004, guid: 9f03a2c3a1a3a45d68e532d151970e9a, type: 3}
-  canvasTransform: {fileID: 591880353}
-  interval: 60
-  viewSize: {x: 1920, y: 1080}
 --- !u!4 &821700740
 Transform:
   m_ObjectHideFlags: 0
@@ -654,6 +653,23 @@ Transform:
   m_Father: {fileID: 591880353}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &821700741
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 821700735}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c258423cac5c475caa7616fee33fdae3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  totalMisalignment: {x: 0, y: 0}
+  lineRenderer: {fileID: 2333722863418321004, guid: 9f03a2c3a1a3a45d68e532d151970e9a, type: 3}
+  canvasTransform: {fileID: 591880353}
+  interval: 100
+  viewSize: {x: 1920, y: 1080}
 --- !u!1 &2080095686
 GameObject:
   m_ObjectHideFlags: 0

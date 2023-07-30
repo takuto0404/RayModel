@@ -14,7 +14,7 @@ namespace Line
         private List<UGUILineRenderer> _verticalLines;
 
         private Vector2 _misalignment;
-        private Vector2 _totalMisalignment;
+        [HideInInspector]public Vector2 totalMisalignment;
         
         [SerializeField] private UGUILineRenderer lineRenderer;
         [SerializeField] private Transform canvasTransform;
@@ -40,7 +40,7 @@ namespace Line
         private void CreateGrids()
         {
             _misalignment = new Vector2();
-            _totalMisalignment = new Vector2();
+            totalMisalignment = new Vector2();
             _horizontalLines = new List<UGUILineRenderer>();
             _verticalLines = new List<UGUILineRenderer>();
             _farIntegerSize = new Vector2(FarInteger(viewSize.x / interval), FarInteger(viewSize.y / interval));
@@ -71,7 +71,7 @@ namespace Line
             vector2.y %= interval;
             var difference = _misalignment - vector2;
             _misalignment = vector2;
-            _totalMisalignment -= move;
+            totalMisalignment -= move;
 
             foreach(var line in _horizontalLines)
             {

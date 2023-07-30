@@ -7,7 +7,7 @@ namespace Default
     {
         private static T _instance;
 
-        public static T Instance
+        protected static T Instance
         {
             get
             {
@@ -24,14 +24,13 @@ namespace Default
 
         protected virtual void Awake()
         {
-            if (this != Instance)
-            {
-                Destroy(this);
-                Debug.LogError(
-                    typeof(T) +
-                    " は既に他のGameObjectにアタッチされているため、コンポーネントを破棄しました." +
-                    " アタッチされているGameObjectは " + Instance.gameObject.name + " です.");
-            }
+            if (this == Instance) return;
+            
+            Destroy(this);
+            Debug.LogError(
+                typeof(T) +
+                " は既に他のGameObjectにアタッチされているため、コンポーネントを破棄しました." +
+                " アタッチされているGameObjectは " + Instance.gameObject.name + " です.");
         }
     }
 }
