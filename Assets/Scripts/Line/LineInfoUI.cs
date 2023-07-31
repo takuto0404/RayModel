@@ -5,9 +5,9 @@ namespace Line
 {
     public class LineInfoUI : MonoBehaviour
     {
-        [SerializeField] private TMP_Text lineNumberText;
-        [SerializeField] private TMP_Text lineTypeText;
-        [SerializeField] private TMP_Text startPointText;
-        [SerializeField] private TMP_Text endPointText;
+        [SerializeField] public TMP_Text lineNumberText;
+        [SerializeField] public TMP_Text lineTypeText;
+        [SerializeField] public TMP_Text startPointText;
+        [SerializeField] public TMP_Text endPointText;
     }
 }

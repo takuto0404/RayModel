@@ -7,7 +7,7 @@ namespace Default
     {
         private static T _instance;
 
-        protected static T Instance
+        public static T Instance
         {
             get
             {

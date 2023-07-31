@@ -18,7 +18,7 @@ namespace Line
         
         [SerializeField] private UGUILineRenderer lineRenderer;
         [SerializeField] private Transform canvasTransform;
-        [SerializeField] private float interval = 100;
+        [SerializeField] public float interval = 100;
         [SerializeField] public Vector2 viewSize = new(1920, 1080);
         private Vector2 _farIntegerSize;
 
