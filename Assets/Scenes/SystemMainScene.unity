@@ -665,10 +665,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c258423cac5c475caa7616fee33fdae3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  totalMisalignment: {x: 0, y: 0}
+  totalMisalignment: {x: -0.2, y: -0.2}
   lineRenderer: {fileID: 2333722863418321004, guid: 9f03a2c3a1a3a45d68e532d151970e9a, type: 3}
   canvasTransform: {fileID: 591880353}
-  interval: 100
+  interval: 60
   viewSize: {x: 1920, y: 1080}
 --- !u!1 &2080095686
 GameObject:

@@ -44,17 +44,17 @@ namespace Line
             _horizontalLines = new List<UGUILineRenderer>();
             _verticalLines = new List<UGUILineRenderer>();
             _farIntegerSize = new Vector2(FarInteger(viewSize.x / interval), FarInteger(viewSize.y / interval));
-            for (var i = 0; i < _farIntegerSize.x; i++)
+            for (var i = 0; i < _farIntegerSize.x + 2; i++)
             {
                 var instantiated = Instantiate(lineRenderer,canvasTransform);
-                var x = interval * i - viewSize.x / 2f;
+                var x = interval * (i - 1) - viewSize.x / 2f;
                 instantiated.SetPositions(new Vector2[]{new (x,-viewSize.y / 2f),new (x, viewSize.y / 2f)});
                 _horizontalLines.Add(instantiated);
             }
-            for (var i = 0; i < _farIntegerSize.y; i++)
+            for (var i = 0; i < _farIntegerSize.y + 2; i++)
             {
                 var instantiated = Instantiate(lineRenderer,canvasTransform);
-                var y = interval * i - viewSize.y / 2f;
+                var y = interval * (i - 1) - viewSize.y / 2f;
                 instantiated.SetPositions(new Vector2[]{new (-viewSize.x / 2f,y),new (viewSize.x / 2f,y)});
                 _verticalLines.Add(instantiated);
             }
