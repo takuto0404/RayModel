@@ -278,7 +278,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   canvasTransform: {fileID: 591880353}
   linePrefab: {fileID: 330689532770059947, guid: 7fda9bb2007ef4bd690634d2632b7359, type: 3}
-  speed: 0.1
+  speed: 0.5
 --- !u!114 &420932843
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -665,7 +665,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c258423cac5c475caa7616fee33fdae3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  totalMisalignment: {x: -0.2, y: -0.2}
+  totalMisalignment: {x: -1.9000003, y: -1.9000003}
   lineRenderer: {fileID: 2333722863418321004, guid: 9f03a2c3a1a3a45d68e532d151970e9a, type: 3}
   canvasTransform: {fileID: 591880353}
   interval: 60

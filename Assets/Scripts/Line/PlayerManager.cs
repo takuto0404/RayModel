@@ -82,12 +82,23 @@ namespace Line
         {
             while (true)
             {
+                Debug.Log("while");
                 await InputProvider.Instance.MouseClickAsync(ct);
-                var startPos = LineGrid.Instance.GetMousePoint() + LineGrid.Instance.totalMisalignment;
-                await InputProvider.Instance.MouseClickAsync(ct);
-                var endPos = LineGrid.Instance.GetMousePoint() + LineGrid.Instance.totalMisalignment;
+                var startPos = LineGrid.Instance.GetMousePoint() - LineGrid.Instance.viewSize / 2f;
                 var newLine = Instantiate(linePrefab, Vector2.zero, Quaternion.identity,canvasTransform);
-                newLine.Init(startPos,endPos,LineType.Mirror,new [] { MaterialType.Air });
+
+                var newCts = new CancellationTokenSource();
+                var mergedCts = CancellationTokenSource.CreateLinkedTokenSource(ct, newCts.Token);
+                var drawLineTask = UniTaskAsyncEnumerable.EveryUpdate().ForEachAsync(_ =>
+                    newLine.LineRenderer.SetPositions(new[] { startPos, LineGrid.Instance.GetMousePoint() - LineGrid.Instance.viewSize / 2f }),mergedCts.Token);
+                var clickTask = InputProvider.Instance.MouseClickAsync(mergedCts.Token);
+                await UniTask.WhenAny(drawLineTask, clickTask);
+                newCts.Cancel();
+                mergedCts.Cancel();
+                
+                var endPos = LineGrid.Instance.GetMousePoint() - LineGrid.Instance.viewSize / 2f;
+                
+                newLine.Init(startPos + LineGrid.Instance.totalMisalignment,endPos + LineGrid.Instance.totalMisalignment,LineType.Mirror,new [] { MaterialType.Air });
                 LineManager.Instance.CreateLineAsUI(newLine);
                 if (ct.IsCancellationRequested) return;
             }

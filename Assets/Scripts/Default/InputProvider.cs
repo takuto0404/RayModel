@@ -29,7 +29,7 @@ namespace Default
 
         public void OnClick(InputAction.CallbackContext context)
         {
-            _clicking = true;
+            if(context.performed)_clicking = true;
         }
 
         public void GetMousePosition(InputAction.CallbackContext context)

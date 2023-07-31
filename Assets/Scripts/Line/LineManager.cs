@@ -34,8 +34,8 @@ namespace Line
             {
                 foreach (var lineInfo in lineInfos)
                 {
-                    var startPos = lineInfo.StartPoint + LineGrid.Instance.totalMisalignment;
-                    var endPos = lineInfo.EndPoint + LineGrid.Instance.totalMisalignment;
+                    var startPos = lineInfo.StartPoint - LineGrid.Instance.totalMisalignment;
+                    var endPos = lineInfo.EndPoint - LineGrid.Instance.totalMisalignment;
                     lineInfo.LineRenderer.SetPositions(new[] { startPos, endPos });
                 }
             }
