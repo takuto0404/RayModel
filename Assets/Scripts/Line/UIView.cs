@@ -16,6 +16,8 @@ namespace Line
         [SerializeField] private Button lineMenuButton;
         [SerializeField] private Button backButton;
 
+        private List<LineInfoUI> _created = new ();
+
         public void SetMousePointerPosition(Vector2 position)
         {
             point.rectTransform.position = position;
@@ -46,6 +48,8 @@ namespace Line
 
         public void MakeContents(List<LineInfo> lineInfos)
         {
+            _created.ForEach(ui => Destroy(ui.gameObject));
+            _created = new List<LineInfoUI>();
             for (var i = 0; i < lineInfos.Count; i++)
             {
                 var lineInfo = lineInfos[i];
@@ -55,6 +59,7 @@ namespace Line
                 var interval = LineGrid.Instance.interval;
                 newUI.startPointText.text = $"({lineInfo.StartPoint.x / interval},{lineInfo.StartPoint.y / interval})";
                 newUI.endPointText.text = $"({lineInfo.EndPoint.x / interval},{lineInfo.EndPoint.y / interval})";
+                _created.Add(newUI);
             }
         }
     }

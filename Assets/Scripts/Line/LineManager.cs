@@ -15,6 +15,20 @@ namespace Line
             Instance.InstanceInit();
         }
 
+        public List<LineInfo> GetAllLines()
+        {
+            var list = new List<LineInfo>();
+            foreach (var lineInfos in _lineObjects.Values)
+            {
+                foreach (var lineInfo in lineInfos)
+                {
+                    list.Add(lineInfo);
+                }
+            }
+
+            return list;
+        }
+
         private void InstanceInit()
         {
             foreach (var lineType in (LineType[])Enum.GetValues(typeof(LineType)))

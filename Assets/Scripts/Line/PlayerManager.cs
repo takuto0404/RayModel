@@ -83,7 +83,6 @@ namespace Line
         {
             while (true)
             {
-                Debug.Log("while");
                 await InputProvider.Instance.MouseClickAsync(ct);
                 var startPos = LineGrid.Instance.GetMousePoint() - LineGrid.Instance.viewSize / 2f + LineGrid.Instance.totalMisalignment;
                 var newLine = Instantiate(linePrefab, Vector2.zero, Quaternion.identity,canvasTransform);
@@ -97,10 +96,18 @@ namespace Line
                 newCts.Cancel();
                 mergedCts.Cancel();
                 
-                var endPos = LineGrid.Instance.GetMousePoint() - LineGrid.Instance.viewSize / 2f;
+                var endPos = LineGrid.Instance.GetMousePoint() - LineGrid.Instance.viewSize / 2f + LineGrid.Instance.totalMisalignment;
+
+                if (startPos == endPos)
+                {
+                    Destroy(newLine.gameObject);
+                    continue;
+                }
                 
-                newLine.Init(startPos,endPos + LineGrid.Instance.totalMisalignment,LineType.Mirror,new [] { MaterialType.Air });
+                newLine.Init(startPos,endPos,LineType.Mirror,new [] { MaterialType.Air });
                 LineManager.Instance.CreateLineAsUI(newLine);
+                
+                UIPresenter.Instance.MakeContents();
                 if (ct.IsCancellationRequested) return;
             }
         }

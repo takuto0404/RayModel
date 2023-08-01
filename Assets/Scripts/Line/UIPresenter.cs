@@ -14,6 +14,11 @@ namespace Line
             uiView.SetMousePointerPosition(pos);
         }
 
+        public void MakeContents()
+        {
+            uiView.MakeContents(LineManager.Instance.GetAllLines());
+        }
+
         public async UniTask UITaskAsync(CancellationToken ct)
         {
             while (true)
