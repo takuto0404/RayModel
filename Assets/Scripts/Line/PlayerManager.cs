@@ -2,6 +2,7 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using Cysharp.Threading.Tasks.Linq;
 using Default;
+using RaySim;
 using UnityEngine;
 
 namespace Line
@@ -10,6 +11,7 @@ namespace Line
     {
         [SerializeField] private Transform canvasTransform;
         [SerializeField] private LineInfo linePrefab;
+        [SerializeField] private RayInfo rayPrefab;
         [SerializeField] private float speed;
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void Init()

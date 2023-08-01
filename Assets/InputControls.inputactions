@@ -20,7 +20,16 @@
                     "id": "f80272fb-019e-456f-9cae-35d65931798e",
                     "expectedControlType": "Button",
                     "processors": "",
-                    "interactions": "",
+                    "interactions": "Tap",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "SlowTap",
+                    "type": "Button",
+                    "id": "8b9870d9-04ad-4539-9c92-32886ec9ee7c",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "SlowTap",
                     "initialStateCheck": false
                 }
             ],
@@ -44,6 +53,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "Click",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "3227a807-475b-442a-b0cb-125d48bac688",
+                    "path": "<Mouse>/press",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "SlowTap",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

@@ -44,7 +44,16 @@ namespace Default
                     ""id"": ""f80272fb-019e-456f-9cae-35d65931798e"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
-                    ""interactions"": """",
+                    ""interactions"": ""Tap"",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""SlowTap"",
+                    ""type"": ""Button"",
+                    ""id"": ""8b9870d9-04ad-4539-9c92-32886ec9ee7c"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": ""SlowTap"",
                     ""initialStateCheck"": false
                 }
             ],
@@ -70,6 +79,17 @@ namespace Default
                     ""action"": ""Click"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""3227a807-475b-442a-b0cb-125d48bac688"",
+                    ""path"": ""<Mouse>/press"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""SlowTap"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -80,6 +100,7 @@ namespace Default
             m_InputControl = asset.FindActionMap("InputControl", throwIfNotFound: true);
             m_InputControl_Position = m_InputControl.FindAction("Position", throwIfNotFound: true);
             m_InputControl_Click = m_InputControl.FindAction("Click", throwIfNotFound: true);
+            m_InputControl_SlowTap = m_InputControl.FindAction("SlowTap", throwIfNotFound: true);
         }
 
         public void Dispose()
@@ -141,12 +162,14 @@ namespace Default
         private IInputControlActions m_InputControlActionsCallbackInterface;
         private readonly InputAction m_InputControl_Position;
         private readonly InputAction m_InputControl_Click;
+        private readonly InputAction m_InputControl_SlowTap;
         public struct InputControlActions
         {
             private @PlayerInputs m_Wrapper;
             public InputControlActions(@PlayerInputs wrapper) { m_Wrapper = wrapper; }
             public InputAction @Position => m_Wrapper.m_InputControl_Position;
             public InputAction @Click => m_Wrapper.m_InputControl_Click;
+            public InputAction @SlowTap => m_Wrapper.m_InputControl_SlowTap;
             public InputActionMap Get() { return m_Wrapper.m_InputControl; }
             public void Enable() { Get().Enable(); }
             public void Disable() { Get().Disable(); }
@@ -162,6 +185,9 @@ namespace Default
                     @Click.started -= m_Wrapper.m_InputControlActionsCallbackInterface.OnClick;
                     @Click.performed -= m_Wrapper.m_InputControlActionsCallbackInterface.OnClick;
                     @Click.canceled -= m_Wrapper.m_InputControlActionsCallbackInterface.OnClick;
+                    @SlowTap.started -= m_Wrapper.m_InputControlActionsCallbackInterface.OnSlowTap;
+                    @SlowTap.performed -= m_Wrapper.m_InputControlActionsCallbackInterface.OnSlowTap;
+                    @SlowTap.canceled -= m_Wrapper.m_InputControlActionsCallbackInterface.OnSlowTap;
                 }
                 m_Wrapper.m_InputControlActionsCallbackInterface = instance;
                 if (instance != null)
@@ -172,6 +198,9 @@ namespace Default
                     @Click.started += instance.OnClick;
                     @Click.performed += instance.OnClick;
                     @Click.canceled += instance.OnClick;
+                    @SlowTap.started += instance.OnSlowTap;
+                    @SlowTap.performed += instance.OnSlowTap;
+                    @SlowTap.canceled += instance.OnSlowTap;
                 }
             }
         }
@@ -180,6 +209,7 @@ namespace Default
         {
             void OnPosition(InputAction.CallbackContext context);
             void OnClick(InputAction.CallbackContext context);
+            void OnSlowTap(InputAction.CallbackContext context);
         }
     }
 }
