@@ -17,6 +17,34 @@ namespace Line
         [SerializeField] private Button backButton;
 
         private List<LineInfoUI> _created = new ();
+        private UniTaskCompletionSource _uts = new ();
+
+
+        public async UniTask<LineInfoUI> ButtonSelectAsync(CancellationToken ct)
+        {
+            while (true)
+            {
+                _uts = new UniTaskCompletionSource();
+                var newCts = new CancellationTokenSource();
+                var mergedCts = CancellationTokenSource.CreateLinkedTokenSource(ct, newCts.Token);
+
+                if (_created.Count == 0)
+                    await UniTask.WaitWhile(() => _created.Count == 0, cancellationToken: mergedCts.Token);
+                
+                var task1 = UniTask.WhenAny(_created.Select(ui => ui.thisButton.OnClickAsync(mergedCts.Token)));
+                var task2 = _uts.Task;
+                
+                var result = await UniTask.WhenAny(task1,task2);
+
+                if (!result.hasResultLeft)
+                {
+                    newCts.Cancel();
+                    continue;
+                }
+                
+                return _created[result.result];
+            }
+        }
 
         public void SetMousePointerPosition(Vector2 position)
         {
@@ -46,21 +74,25 @@ namespace Line
             lineMenuPanel.enabled = false;
         }
 
-        public void MakeContents(List<LineInfo> lineInfos)
+        public LineInfoUI MakeContents(List<LineInfo> lineInfos,LineInfo selecting)
         {
+            LineInfoUI selected = null;
             _created.ForEach(ui => Destroy(ui.gameObject));
             _created = new List<LineInfoUI>();
             for (var i = 0; i < lineInfos.Count; i++)
             {
                 var lineInfo = lineInfos[i];
                 var newUI = Instantiate(lineInfoUIPrefab, scrollViewContent);
-                newUI.lineNumberText.text = (i + 1).ToString();
-                newUI.lineTypeText.text = lineInfo.LineType.ToString();
-                var interval = LineGrid.Instance.interval;
-                newUI.startPointText.text = $"({lineInfo.StartPoint.x / interval},{lineInfo.StartPoint.y / interval})";
-                newUI.endPointText.text = $"({lineInfo.EndPoint.x / interval},{lineInfo.EndPoint.y / interval})";
+                newUI.Init(lineInfo,i + 1);
                 _created.Add(newUI);
+                if (lineInfo == selecting)
+                {
+                    newUI.SelectColor();
+                    selected = newUI;
+                }
             }
+            _uts.TrySetResult();
+            return selected;
         }
     }
 }

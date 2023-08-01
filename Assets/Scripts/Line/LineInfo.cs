@@ -17,15 +17,5 @@ namespace Line
         public LineType LineType { get; private set; }
         public MaterialType[] MaterialTypes { get; private set; }
         public UGUILineRenderer LineRenderer => GetComponent<UGUILineRenderer>();
-
-        public void SelectColor()
-        {
-            LineRenderer.color = Color.magenta;
-        }
-
-        public void ResetColor()
-        {
-            LineRenderer.color = Color.black;
-        }
     }
 }

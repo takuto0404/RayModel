@@ -94,8 +94,7 @@ namespace Line
                 var clickTask = InputProvider.Instance.MouseClickAsync(mergedCts.Token);
                 await UniTask.WhenAny(drawLineTask, clickTask);
                 newCts.Cancel();
-                mergedCts.Cancel();
-                
+
                 var endPos = LineGrid.Instance.GetMousePoint() - LineGrid.Instance.viewSize / 2f + LineGrid.Instance.totalMisalignment;
 
                 if (startPos == endPos)
