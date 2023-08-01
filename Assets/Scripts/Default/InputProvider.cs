@@ -1,6 +1,7 @@
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 
 namespace Default
@@ -29,6 +30,7 @@ namespace Default
 
         public void OnClick(InputAction.CallbackContext context)
         {
+            if (EventSystem.current.IsPointerOverGameObject()) return;
             if(context.performed)_clicking = true;
         }
 

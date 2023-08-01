@@ -14,6 +14,7 @@ namespace Line
             rectTransform.localPosition = Vector3.zero;
             positions = newPositions;
             SetVerticesDirty();
+            transform.SetAsFirstSibling();
         }
 
         protected override void OnPopulateMesh(VertexHelper vh)

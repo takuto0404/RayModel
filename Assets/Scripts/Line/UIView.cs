@@ -34,12 +34,12 @@ namespace Line
         public async UniTask ShowLineMenu(CancellationToken ct)
         {
             lineMenuPanel.enabled = true;
-            await lineMenuPanel.rectTransform.DOMove(new Vector2(LineGrid.Instance.viewSize.x / 3, 0),0.5f).WithCancellation(ct);
+            await lineMenuPanel.rectTransform.DOLocalMove(new Vector2(LineGrid.Instance.viewSize.x / 3, 0),0.5f).WithCancellation(ct);
         }
 
         public async UniTask HideLineMenu(CancellationToken ct)
         {
-            await lineMenuPanel.rectTransform.DOMove(new Vector2(LineGrid.Instance.viewSize.x * 2 / 3,0), 0.5f)
+            await lineMenuPanel.rectTransform.DOLocalMove(new Vector2(LineGrid.Instance.viewSize.x * 2 / 3,0), 0.5f)
                 .WithCancellation(ct);
             lineMenuPanel.enabled = false;
         }
