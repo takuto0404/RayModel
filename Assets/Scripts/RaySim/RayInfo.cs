@@ -9,9 +9,11 @@ namespace RaySim
         {
             StartPoint = startPoint;
             Vector = vector;
+            EndPoint = startPoint;
         }
         
         public Vector2 StartPoint { get; private set; }
+        public Vector2 EndPoint { get; set; }
         public Vector2 Vector { get; private set; }
         public UGUILineRenderer LineRenderer => GetComponent<UGUILineRenderer>();
     }
