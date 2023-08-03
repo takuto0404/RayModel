@@ -27,7 +27,7 @@ namespace Line
 
             var task1 = SceneMoveAsync(cts.Token);
             var task2 = DrawLineAsync(cts.Token);
-            var task3 = UIPresenter.Instance.UITaskAsync(cts.Token);
+            var task3 = UIPresenter.Instance.LineUITaskAsync(cts.Token);
             await UniTask.WhenAny(task1, task2,task3);
         }
 
@@ -81,6 +81,38 @@ namespace Line
             LineGrid.Instance.UpdateGrid(new Vector2(x,y));
         }
 
+        private async UniTask DrawRayAsync(CancellationToken ct)
+        {
+            while (true)
+            {
+                await InputProvider.Instance.LongPressAsync(ct);
+                var startPos = LineGrid.Instance.GetMousePoint() - LineGrid.Instance.viewSize / 2f + LineGrid.Instance.totalMisalignment;
+                var newRay = Instantiate(rayPrefab, Vector2.zero, Quaternion.identity,canvasTransform);
+
+                var newCts = new CancellationTokenSource();
+                var mergedCts = CancellationTokenSource.CreateLinkedTokenSource(ct, newCts.Token);
+                var drawRayTask = UniTaskAsyncEnumerable.EveryUpdate().ForEachAsync(_ =>
+                    newRay.LineRenderer.SetPositions(new[] { startPos - LineGrid.Instance.totalMisalignment, LineGrid.Instance.GetMousePoint() - LineGrid.Instance.viewSize / 2f }),mergedCts.Token);
+                var longPressTask = InputProvider.Instance.LongPressAsync(mergedCts.Token);
+                await UniTask.WhenAny(drawRayTask, longPressTask);
+                newCts.Cancel();
+
+                var endPos = LineGrid.Instance.GetMousePoint() - LineGrid.Instance.viewSize / 2f + LineGrid.Instance.totalMisalignment;
+
+                if (startPos == endPos)
+                {
+                    Destroy(newRay.gameObject);
+                    continue;
+                }
+                
+                newRay.Init(startPos,endPos / startPos);
+                RayManager.Instance.CreateRayAsUI(newRay);
+                
+                UIPresenter.Instance.MakeRayContents();
+                if (ct.IsCancellationRequested) return;
+            }
+        }
+
         private async UniTask DrawLineAsync(CancellationToken ct)
         {
             while (true)
@@ -108,7 +140,7 @@ namespace Line
                 newLine.Init(startPos,endPos,LineType.Mirror,new [] { MaterialType.Air });
                 LineManager.Instance.CreateLineAsUI(newLine);
                 
-                UIPresenter.Instance.MakeContents();
+                UIPresenter.Instance.MakeLineContents();
                 if (ct.IsCancellationRequested) return;
             }
         }

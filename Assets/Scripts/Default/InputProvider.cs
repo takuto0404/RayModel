@@ -10,7 +10,8 @@ namespace Default
     {
         private PlayerInputs _playerInputs;
         public Vector2 mousePosition;
-        private bool _clicking = false;
+        private bool _clicked = false;
+        private bool _longPressed = false;
         
         public void SubscribeActions()
         {
@@ -24,14 +25,26 @@ namespace Default
 
         public async UniTask MouseClickAsync(CancellationToken ct)
         {
-            await UniTask.WaitWhile(() => !_clicking, cancellationToken: ct);
-            _clicking = false;
+            await UniTask.WaitWhile(() => !_clicked, cancellationToken: ct);
+            _clicked = false;
+        }
+
+        public async UniTask LongPressAsync(CancellationToken ct)
+        {
+            await UniTask.WaitWhile(() => !_longPressed, cancellationToken: ct);
+            _longPressed = false;
         }
 
         public void OnClick(InputAction.CallbackContext context)
         {
             if (EventSystem.current.IsPointerOverGameObject()) return;
-            if(context.performed)_clicking = true;
+            if(context.performed)_clicked = true;
+        }
+        
+        public void OnLongPress(InputAction.CallbackContext context)
+        {
+            if (EventSystem.current.IsPointerOverGameObject()) return;
+            if(context.performed)_longPressed = true;
         }
 
         public void GetMousePosition(InputAction.CallbackContext context)
