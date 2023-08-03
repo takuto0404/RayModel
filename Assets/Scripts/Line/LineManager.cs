@@ -50,7 +50,7 @@ namespace Line
                 {
                     var startPos = lineInfo.StartPoint - LineGrid.Instance.totalMisalignment;
                     var endPos = lineInfo.EndPoint - LineGrid.Instance.totalMisalignment;
-                    lineInfo.LineRenderer.SetPositions(new[] { startPos, endPos });
+                    lineInfo.GetUGUILineRenderer().SetPositions(new[] { startPos, endPos });
                 }
             }
         }

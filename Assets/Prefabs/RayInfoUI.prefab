@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 5670212904664897116}
   - component: {fileID: 5670212904664897107}
   - component: {fileID: 385817517566694095}
+  - component: {fileID: 3765935556077452097}
   m_Layer: 5
   m_Name: RayInfoUI
   m_TagString: Untagged
@@ -124,6 +125,24 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &3765935556077452097
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5670212904664897105}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1c67b9da96c640a1b8556f3ac11ca0ba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  rayNumberText: {fileID: 5670212904809388352}
+  startPointText: {fileID: 5670212905046824654}
+  vectorText: {fileID: 5670212905634778481}
+  thisButton: {fileID: 385817517566694095}
+  thisImage: {fileID: 5670212904664897107}
+  rayInfo: {fileID: 0}
 --- !u!1 &5670212904809388358
 GameObject:
   m_ObjectHideFlags: 0

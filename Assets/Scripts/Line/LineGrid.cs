@@ -73,6 +73,7 @@ namespace Line
             _misalignment = vector2;
             totalMisalignment -= move;
 
+            if (_horizontalLines == null || _verticalLines == null) return;
             foreach(var line in _horizontalLines)
             {
                 var positions = line.positions;

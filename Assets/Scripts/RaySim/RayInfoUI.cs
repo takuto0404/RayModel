@@ -23,13 +23,13 @@ namespace RaySim
         }
         public void SelectColor()
         {
-            rayInfo.LineRenderer.color = Color.magenta;
+            rayInfo.GetUGUILineRenderer().color = Color.magenta;
             thisImage.color = new Color(0.8f,0.5f,0.5f);
         }
 
         public void ResetColor()
         {
-            rayInfo.LineRenderer.color = Color.black;
+            rayInfo.GetUGUILineRenderer().color = Color.black;
             thisImage.color = Color.white;
         }
     }

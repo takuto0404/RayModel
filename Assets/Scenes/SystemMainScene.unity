@@ -198,6 +198,22 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: f80272fb-019e-456f-9cae-35d65931798e
     m_ActionName: InputControl/Click[/Mouse/press]
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 64067866}
+        m_TargetAssemblyTypeName: Default.InputProvider, Assembly-CSharp
+        m_MethodName: OnLongPress
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: 8b9870d9-04ad-4539-9c92-32886ec9ee7c
+    m_ActionName: InputControl/SlowTap[/Mouse/press]
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: InputControl
@@ -566,6 +582,7 @@ GameObject:
   - component: {fileID: 420932841}
   - component: {fileID: 420932842}
   - component: {fileID: 420932843}
+  - component: {fileID: 420932844}
   m_Layer: 0
   m_Name: PlayerManager
   m_TagString: Untagged
@@ -602,7 +619,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   canvasTransform: {fileID: 591880353}
   linePrefab: {fileID: 330689532770059947, guid: 7fda9bb2007ef4bd690634d2632b7359, type: 3}
-  rayPrefab: {fileID: 0}
+  rayPrefab: {fileID: 9087324035233687944, guid: ac5619777a0824a56a25cfc0917afdee, type: 3}
   speed: 0.5
 --- !u!114 &420932843
 MonoBehaviour:
@@ -614,6 +631,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 249f7a78be574fafafb386ec93f58dc0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &420932844
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 420932840}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3fa5706d442e407d90fff2db49f82dde, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &492392149
@@ -1025,7 +1054,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -960, y: -540}
+  m_AnchoredPosition: {x: -959.5, y: -539.5}
   m_SizeDelta: {x: 30, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &639355880
@@ -1300,7 +1329,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c258423cac5c475caa7616fee33fdae3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  totalMisalignment: {x: -26.400002, y: -26.400002}
+  totalMisalignment: {x: -39.4, y: -39.4}
   lineRenderer: {fileID: 2333722863418321004, guid: 9f03a2c3a1a3a45d68e532d151970e9a, type: 3}
   canvasTransform: {fileID: 591880353}
   interval: 60
@@ -2312,10 +2341,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   point: {fileID: 639355880}
   lineInfoUIPrefab: {fileID: -3431597847788980278, guid: 5583b06298cf944a1a5cd0522b4fda7f, type: 3}
-  scrollViewContent: {fileID: 559684166}
+  lineScrollViewContent: {fileID: 559684166}
   lineMenuPanel: {fileID: 1448085177}
   lineMenuButton: {fileID: 1019135637}
-  backButton: {fileID: 492392151}
+  lineMenuBackButton: {fileID: 492392151}
+  rayInfoUIPrefab: {fileID: 3765935556077452097, guid: 2d5360c2d7c624c439cecf6ddb14d4e0, type: 3}
+  rayScrollViewContent: {fileID: 1195786994}
+  rayMenuPanel: {fileID: 324645459}
+  rayMenuButton: {fileID: 677865808}
+  rayMenuBackButton: {fileID: 1840311353}
 --- !u!4 &2080095689
 Transform:
   m_ObjectHideFlags: 0

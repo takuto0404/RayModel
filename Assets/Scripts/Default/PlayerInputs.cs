@@ -53,7 +53,7 @@ namespace Default
                     ""id"": ""8b9870d9-04ad-4539-9c92-32886ec9ee7c"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
-                    ""interactions"": ""SlowTap"",
+                    ""interactions"": ""SlowTap(duration=0.3,pressPoint=0.3)"",
                     ""initialStateCheck"": false
                 }
             ],

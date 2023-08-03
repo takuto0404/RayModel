@@ -1,10 +1,11 @@
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Default;
+using Line;
 using RaySim;
 using UnityEngine;
 
-namespace Line
+namespace UI
 {
     public class UIPresenter : SingletonMonoBehaviour<UIPresenter>
     {

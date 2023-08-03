@@ -29,23 +29,23 @@ namespace RaySim
                 var viewSize = LineGrid.Instance.viewSize;
                 if (endPos.x < viewSize.x && endPos.y < viewSize.y)
                 {
+                    var calculateViewSize = new Vector2(viewSize.x - endPos.x, viewSize.y - endPos.y);
                     var vector = ray.Vector;
-                    if (viewSize.x / viewSize.y < vector.x / vector.y)
+                    if (calculateViewSize.x / calculateViewSize.y < vector.x / vector.y)
                     {
-                        endPos = new Vector2(viewSize.x, viewSize.y * (vector.x / viewSize.x));
+                        endPos = new Vector2(viewSize.x, vector.y * (calculateViewSize.x / vector.x) + endPos.y);
                     }
-                    else if (viewSize.x / viewSize.y < vector.x / vector.y)
+                    else if (calculateViewSize.x / calculateViewSize.y > vector.x / vector.y)
                     {
-                        endPos = viewSize;
+                        endPos = new Vector2(vector.x * (calculateViewSize.y / vector.y) + endPos.x, viewSize.y);
                     }
                     else
                     {
-                        endPos = new Vector2(viewSize.x * (vector.y / viewSize.y), viewSize.y);
+                        endPos = viewSize;
                     }
+                    ray.EndPoint = endPos + LineGrid.Instance.totalMisalignment;
                 }
-
-                ray.EndPoint = endPos;
-                ray.LineRenderer.SetPositions(new[] { startPos, endPos });
+                ray.GetUGUILineRenderer().SetPositions(new[] { startPos, endPos });
             }
         }
     }

@@ -143,12 +143,12 @@ namespace Line
         public async UniTask ShowRayMenu(CancellationToken ct)
         {
             rayMenuPanel.enabled = true;
-            await rayMenuPanel.rectTransform.DOLocalMove(new Vector2(LineGrid.Instance.viewSize.x / 3, 0),0.5f).WithCancellation(ct);
+            await rayMenuPanel.rectTransform.DOLocalMove(new Vector2(-LineGrid.Instance.viewSize.x / 3, 0),0.5f).WithCancellation(ct);
         }
 
         public async UniTask HideRayMenu(CancellationToken ct)
         {
-            await rayMenuPanel.rectTransform.DOLocalMove(new Vector2(LineGrid.Instance.viewSize.x * 2 / 3,0), 0.5f)
+            await rayMenuPanel.rectTransform.DOLocalMove(new Vector2(-LineGrid.Instance.viewSize.x * 2 / 3,0), 0.5f)
                 .WithCancellation(ct);
             rayMenuPanel.enabled = false;
         }

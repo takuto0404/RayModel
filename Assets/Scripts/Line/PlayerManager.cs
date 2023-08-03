@@ -3,6 +3,7 @@ using Cysharp.Threading.Tasks;
 using Cysharp.Threading.Tasks.Linq;
 using Default;
 using RaySim;
+using UI;
 using UnityEngine;
 
 namespace Line
@@ -26,9 +27,10 @@ namespace Line
             using var cts = new CancellationTokenSource();
 
             var task1 = SceneMoveAsync(cts.Token);
-            var task2 = DrawLineAsync(cts.Token);
+            var task2 = DrawAsync(cts.Token);
             var task3 = UIPresenter.Instance.LineUITaskAsync(cts.Token);
-            await UniTask.WhenAny(task1, task2,task3);
+            var task4 = UIPresenter.Instance.RayUITaskAsync(cts.Token);
+            await UniTask.WhenAny(task1, task2,task3,task4);
         }
 
         private async UniTask SceneMoveAsync(CancellationToken ct)
@@ -43,6 +45,7 @@ namespace Line
 
                     Move(mousePos);
                     LineManager.Instance.UpdateLinePosition();
+                    RayManager.Instance.UpdateRayPosition();
                 }
 
                 return;
@@ -81,66 +84,67 @@ namespace Line
             LineGrid.Instance.UpdateGrid(new Vector2(x,y));
         }
 
-        private async UniTask DrawRayAsync(CancellationToken ct)
+        private async UniTask DrawAsync(CancellationToken ct)
         {
             while (true)
             {
-                await InputProvider.Instance.LongPressAsync(ct);
+                var newCts1 = new CancellationTokenSource();
+                var mergedCts1 = CancellationTokenSource.CreateLinkedTokenSource(newCts1.Token, ct);
+                var rayTask = InputProvider.Instance.LongPressAsync(mergedCts1.Token);
+                var lineTask = InputProvider.Instance.MouseClickAsync(mergedCts1.Token);
+                var result = await UniTask.WhenAny(rayTask, lineTask);
+                newCts1.Cancel();
+
+                GameObject prefab;
+                if (result == 0)
+                {
+                    prefab = rayPrefab.gameObject;
+                }
+                else
+                {
+                    prefab = linePrefab.gameObject;
+                }
+                var newObject = Instantiate(prefab, Vector2.zero, Quaternion.identity,canvasTransform);
+                var newLineOrRay = newObject.GetComponent<ILineBeAble>();
+                
+                var newCts2 = new CancellationTokenSource();
+                var mergedCts2 = CancellationTokenSource.CreateLinkedTokenSource(ct, newCts2.Token);
+                
                 var startPos = LineGrid.Instance.GetMousePoint() - LineGrid.Instance.viewSize / 2f + LineGrid.Instance.totalMisalignment;
-                var newRay = Instantiate(rayPrefab, Vector2.zero, Quaternion.identity,canvasTransform);
 
-                var newCts = new CancellationTokenSource();
-                var mergedCts = CancellationTokenSource.CreateLinkedTokenSource(ct, newCts.Token);
-                var drawRayTask = UniTaskAsyncEnumerable.EveryUpdate().ForEachAsync(_ =>
-                    newRay.LineRenderer.SetPositions(new[] { startPos - LineGrid.Instance.totalMisalignment, LineGrid.Instance.GetMousePoint() - LineGrid.Instance.viewSize / 2f }),mergedCts.Token);
-                var longPressTask = InputProvider.Instance.LongPressAsync(mergedCts.Token);
-                await UniTask.WhenAny(drawRayTask, longPressTask);
-                newCts.Cancel();
-
+                Debug.Log("タスク開始");
+                var drawLineOrRayTask = UniTaskAsyncEnumerable.EveryUpdate().ForEachAsync(_ =>
+                    newLineOrRay.GetUGUILineRenderer().SetPositions(new[] { startPos - LineGrid.Instance.totalMisalignment, LineGrid.Instance.GetMousePoint() - LineGrid.Instance.viewSize / 2f }),mergedCts2.Token);
+                var clickTask = InputProvider.Instance.MouseClickAsync(mergedCts2.Token);
+                
+                await UniTask.WhenAny(drawLineOrRayTask, clickTask);
+                Debug.Log("終わった...");
+                newCts2.Cancel();
                 var endPos = LineGrid.Instance.GetMousePoint() - LineGrid.Instance.viewSize / 2f + LineGrid.Instance.totalMisalignment;
-
                 if (startPos == endPos)
                 {
-                    Destroy(newRay.gameObject);
+                    Destroy(newLineOrRay.GetGameObject());
                     continue;
                 }
                 
-                newRay.Init(startPos,endPos / startPos);
-                RayManager.Instance.CreateRayAsUI(newRay);
-                
-                UIPresenter.Instance.MakeRayContents();
-                if (ct.IsCancellationRequested) return;
-            }
-        }
-
-        private async UniTask DrawLineAsync(CancellationToken ct)
-        {
-            while (true)
-            {
-                await InputProvider.Instance.MouseClickAsync(ct);
-                var startPos = LineGrid.Instance.GetMousePoint() - LineGrid.Instance.viewSize / 2f + LineGrid.Instance.totalMisalignment;
-                var newLine = Instantiate(linePrefab, Vector2.zero, Quaternion.identity,canvasTransform);
-
-                var newCts = new CancellationTokenSource();
-                var mergedCts = CancellationTokenSource.CreateLinkedTokenSource(ct, newCts.Token);
-                var drawLineTask = UniTaskAsyncEnumerable.EveryUpdate().ForEachAsync(_ =>
-                    newLine.LineRenderer.SetPositions(new[] { startPos - LineGrid.Instance.totalMisalignment, LineGrid.Instance.GetMousePoint() - LineGrid.Instance.viewSize / 2f }),mergedCts.Token);
-                var clickTask = InputProvider.Instance.MouseClickAsync(mergedCts.Token);
-                await UniTask.WhenAny(drawLineTask, clickTask);
-                newCts.Cancel();
-
-                var endPos = LineGrid.Instance.GetMousePoint() - LineGrid.Instance.viewSize / 2f + LineGrid.Instance.totalMisalignment;
-
-                if (startPos == endPos)
+                if (result == 0)
                 {
-                    Destroy(newLine.gameObject);
-                    continue;
+                    var ray = (RayInfo)newLineOrRay;
+                    ray.Init(startPos,endPos - startPos);
+                    RayManager.Instance.CreateRayAsUI(ray);
+                
+                    UIPresenter.Instance.MakeRayContents();
+                    RayManager.Instance.UpdateRayPosition();
                 }
+                else
+                {
+                    var line = (LineInfo)newLineOrRay;
+                    line.Init(startPos,endPos,LineType.Mirror,new [] { MaterialType.Air });
+                    LineManager.Instance.CreateLineAsUI(line);
                 
-                newLine.Init(startPos,endPos,LineType.Mirror,new [] { MaterialType.Air });
-                LineManager.Instance.CreateLineAsUI(newLine);
-                
-                UIPresenter.Instance.MakeLineContents();
+                    UIPresenter.Instance.MakeLineContents();
+                    LineManager.Instance.UpdateLinePosition();
+                }
                 if (ct.IsCancellationRequested) return;
             }
         }

@@ -25,13 +25,13 @@ namespace Line
         }
         public void SelectColor()
         {
-            lineInfo.LineRenderer.color = Color.magenta;
+            lineInfo.GetUGUILineRenderer().color = Color.magenta;
             thisImage.color = new Color(0.8f,0.5f,0.5f);
         }
 
         public void ResetColor()
         {
-            lineInfo.LineRenderer.color = Color.black;
+            lineInfo.GetUGUILineRenderer().color = Color.black;
             thisImage.color = Color.white;
         }
     }
