@@ -7,11 +7,11 @@ namespace RaySim
     [RequireComponent(typeof(UGUILineRenderer))]
     public class RayInfo : MonoBehaviour,ILineBeAble
     {
-        public void Init(Vector2 startPoint, Vector2 vector)
+        public void Init(Vector2 startPoint, Vector2 vector,Vector2 endPoint)
         {
             StartPoint = startPoint;
             Vector = vector;
-            EndPoint = startPoint;
+            EndPoint = endPoint;
             LineRenderer = GetUGUILineRenderer();
         }
         

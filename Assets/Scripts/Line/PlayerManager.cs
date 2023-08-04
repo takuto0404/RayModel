@@ -111,14 +111,12 @@ namespace Line
                 var mergedCts2 = CancellationTokenSource.CreateLinkedTokenSource(ct, newCts2.Token);
                 
                 var startPos = LineGrid.Instance.GetMousePoint() - LineGrid.Instance.viewSize / 2f + LineGrid.Instance.totalMisalignment;
-
-                Debug.Log("タスク開始");
+                
                 var drawLineOrRayTask = UniTaskAsyncEnumerable.EveryUpdate().ForEachAsync(_ =>
                     newLineOrRay.GetUGUILineRenderer().SetPositions(new[] { startPos - LineGrid.Instance.totalMisalignment, LineGrid.Instance.GetMousePoint() - LineGrid.Instance.viewSize / 2f }),mergedCts2.Token);
                 var clickTask = InputProvider.Instance.MouseClickAsync(mergedCts2.Token);
                 
                 await UniTask.WhenAny(drawLineOrRayTask, clickTask);
-                Debug.Log("終わった...");
                 newCts2.Cancel();
                 var endPos = LineGrid.Instance.GetMousePoint() - LineGrid.Instance.viewSize / 2f + LineGrid.Instance.totalMisalignment;
                 if (startPos == endPos)
@@ -130,7 +128,7 @@ namespace Line
                 if (result == 0)
                 {
                     var ray = (RayInfo)newLineOrRay;
-                    ray.Init(startPos,endPos - startPos);
+                    ray.Init(startPos,endPos - startPos,endPos);
                     RayManager.Instance.CreateRayAsUI(ray);
                 
                     UIPresenter.Instance.MakeRayContents();
