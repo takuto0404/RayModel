@@ -15,11 +15,13 @@ namespace Line
 
         private Vector2 _misalignment;
         [HideInInspector]public Vector2 totalMisalignment;
-        
+
         [SerializeField] private UGUILineRenderer lineRenderer;
         [SerializeField] private Transform canvasTransform;
         [SerializeField] public float interval = 100;
         [SerializeField] public Vector2 viewSize = new(1920, 1080);
+        [HideInInspector] public Vector2 maxViewPos;
+        [HideInInspector] public Vector2 minViewPos;
         private Vector2 _farIntegerSize;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -39,6 +41,8 @@ namespace Line
 
         private void CreateGrids()
         {
+            maxViewPos = Vector2.zero;
+            minViewPos = Vector2.zero;
             _misalignment = new Vector2();
             totalMisalignment = new Vector2();
             _horizontalLines = new List<UGUILineRenderer>();
@@ -72,6 +76,25 @@ namespace Line
             var difference = _misalignment - vector2;
             _misalignment = vector2;
             totalMisalignment -= move;
+            if (totalMisalignment.x + viewSize.x / 2 > maxViewPos.x)
+            {
+                maxViewPos = new Vector2(totalMisalignment.x + viewSize.x / 2, maxViewPos.y);
+            }
+
+            if (totalMisalignment.y + viewSize.y / 2 > maxViewPos.y)
+            {
+                maxViewPos = new Vector2(maxViewPos.x, totalMisalignment.y + viewSize.y / 2);
+            }
+
+            if (totalMisalignment.x - viewSize.x / 2 < minViewPos.x)
+            {
+                minViewPos = new Vector2(totalMisalignment.x - viewSize.x / 2, minViewPos.y);
+            }
+
+            if (totalMisalignment.y - viewSize.y / 2 < minViewPos.y)
+            {
+                minViewPos = new Vector2(minViewPos.x, totalMisalignment.y - viewSize.y / 2);
+            }
 
             if (_horizontalLines == null || _verticalLines == null) return;
             foreach(var line in _horizontalLines)

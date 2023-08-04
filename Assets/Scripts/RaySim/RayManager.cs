@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Default;
 using Line;
+using UnityEditor;
 using UnityEngine;
 
 namespace RaySim
@@ -18,36 +19,49 @@ namespace RaySim
         {
             _rayObjects.Add(rayInfo);
         }
-
         public void UpdateRayPosition()
         {
             foreach (var ray in _rayObjects)
             {
-                var startPos = ray.StartPoint - LineGrid.Instance.totalMisalignment;
-                var endPos = ray.EndPoint - LineGrid.Instance.totalMisalignment;
-                var viewSize = LineGrid.Instance.viewSize / 2;
-                if (Mathf.Abs(endPos.x) < viewSize.x && Mathf.Abs(endPos.y) < viewSize.y)
+                var startPos = ray.EndPoint;
+                var endPos = ray.EndPoint;
+                var vector = ray.Vector;
+        
+                var max = LineGrid.Instance.maxViewPos;
+                var min = LineGrid.Instance.minViewPos;
+        
+                Vector2 size;
+                if (vector.x > 0 && vector.y > 0)
+                { 
+                    size = max;
+                }
+                else if (vector.x > 0 && vector.y <= 0)
                 {
-                    var calculateViewSize = viewSize - new Vector2(Mathf.Abs(endPos.x),Mathf.Abs(endPos.y));
-                    Debug.Log(calculateViewSize);
-                    var vector = ray.Vector;
-                    if (calculateViewSize.x / calculateViewSize.y < Mathf.Abs(vector.x / vector.y))
-                    {
-                        endPos = vector * Mathf.Abs(calculateViewSize.x / vector.x) + endPos;
-                    }
-                    else if (calculateViewSize.x / calculateViewSize.y > Mathf.Abs(vector.x / vector.y))
-                    {
-                        endPos = vector * Mathf.Abs(calculateViewSize.y / vector.y) + endPos;
-                    }
-                    else
-                    {
-                        endPos = viewSize;
-                    }
-                    
-                    ray.EndPoint = endPos + LineGrid.Instance.totalMisalignment;
+                    size = new Vector2(max.x, min.y);
+                }
+                else if(vector.x <= 0 && vector.y > 0)
+                {
+                    size = new Vector2(min.x, max.y);
+                }
+                else
+                {
+                    size = min;
+                }
+                
+                if (Mathf.Abs(endPos.x) < Mathf.Abs(size.x))
+                {
+                    endPos = startPos + vector * ((size.x - startPos.x) / vector.x);
+                    Debug.Log($"xの限界が{size.x}に満たなかったので修正後{endPos.x}になりました。");
+                }
+                if (Mathf.Abs(endPos.y) < Mathf.Abs(size.y))
+                {
+                    endPos = startPos + vector * ((size.y - startPos.y) / vector.y);
+                    Debug.Log($"yの限界が{size.y}に満たなかったので修正後{endPos.y}になりました。");
                 }
 
-                ray.GetUGUILineRenderer().SetPositions(new[] { startPos, endPos });
+                ray.EndPoint = endPos;
+        
+                ray.GetUGUILineRenderer().SetPositions(new[] { ray.StartPoint - LineGrid.Instance.totalMisalignment, endPos - LineGrid.Instance.totalMisalignment});
             }
         }
     }
