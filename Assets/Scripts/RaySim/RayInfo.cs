@@ -12,7 +12,9 @@ namespace RaySim
             StartPoint = startPoint;
             Vector = vector;
             EndPoint = endPoint;
-            LineRenderer = GetUGUILineRenderer();
+            _lineRenderer = GetUGUILineRenderer();
+            Child = (null,null);
+            obstacle = null;
         }
         
         public GameObject GetGameObject()
@@ -22,13 +24,16 @@ namespace RaySim
 
         public UGUILineRenderer GetUGUILineRenderer()
         {
-            if (LineRenderer == null) LineRenderer = GetComponent<UGUILineRenderer>();
-            return LineRenderer;
+            if (_lineRenderer == null) _lineRenderer = GetComponent<UGUILineRenderer>();
+            return _lineRenderer;
         }
         
         public Vector2 StartPoint { get; private set; }
         public Vector2 EndPoint { get; set; }
         public Vector2 Vector { get; private set; }
-        private UGUILineRenderer LineRenderer;
+        private UGUILineRenderer _lineRenderer;
+        
+        public (RayInfo rayInfo,RayInfoUI ui) Child;
+        public LineInfo obstacle;
     }
 }

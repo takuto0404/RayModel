@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Cysharp.Threading.Tasks.Linq;
@@ -119,7 +120,18 @@ namespace Line
                 await UniTask.WhenAny(drawLineOrRayTask, clickTask);
                 newCts2.Cancel();
                 var endPos = LineGrid.Instance.GetMousePoint() - LineGrid.Instance.viewSize / 2f + LineGrid.Instance.totalMisalignment;
-                if (startPos == endPos)
+
+                bool doContain;
+                if (result == 0)
+                {
+                    doContain = RayManager.Instance.GetAllRays().Select(ray => (ray.StartPoint, ray.EndPoint)).Where(poses => poses == (startPos, endPos)).ToArray().Length > 0;
+                }
+                else
+                {
+                    doContain = LineManager.Instance.GetAllLines().Select(line => (line.StartPoint, line.EndPoint))
+                        .Where(poses => poses == (startPos, endPos)).ToArray().Length > 0;
+                }
+                if (startPos == endPos || doContain)
                 {
                     Destroy(newLineOrRay.GetGameObject());
                     continue;

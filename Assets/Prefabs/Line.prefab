@@ -64,7 +64,7 @@ MonoBehaviour:
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   positions: []
-  weight: 7.5
+  weight: 4
 --- !u!114 &330689532770059947
 MonoBehaviour:
   m_ObjectHideFlags: 0

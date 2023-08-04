@@ -60,11 +60,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0.8446779, b: 1, a: 0.7607843}
+  m_Color: {r: 1, g: 0.07212782, b: 0, a: 0.7607843}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   positions: []
-  weight: 5
+  weight: 3
 --- !u!114 &9087324035233687944
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -77,3 +77,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c586994a173b411d95cf58abf59f4f67, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  child: {fileID: 0}
+  obstacle: {fileID: 0}
