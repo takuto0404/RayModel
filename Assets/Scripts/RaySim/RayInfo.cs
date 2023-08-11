@@ -13,8 +13,29 @@ namespace RaySim
             Vector = vector;
             EndPoint = endPoint;
             _lineRenderer = GetUGUILineRenderer();
-            Child = (null,null);
-            obstacle = null;
+            obstacleId = -1;
+        }
+
+        public void DestroyChild(bool destroyThis)
+        {
+            if (child != null)
+            {
+                child.DestroyChild(true);
+                child = null;
+            }
+            if(destroyThis)Destroy(gameObject);
+        }
+
+        public void SelectColor()
+        {
+            GetUGUILineRenderer().color = Color.magenta;
+            if(child != null)child.SelectColor();
+        }
+
+        public void ResetColor()
+        {
+            GetUGUILineRenderer().color = Color.black;
+            if(child != null)child.ResetColor();
         }
         
         public GameObject GetGameObject()
@@ -33,7 +54,7 @@ namespace RaySim
         public Vector2 Vector { get; private set; }
         private UGUILineRenderer _lineRenderer;
         
-        public (RayInfo rayInfo,RayInfoUI ui) Child;
-        public LineInfo obstacle;
+        public RayInfo child;
+        public int obstacleId;
     }
 }

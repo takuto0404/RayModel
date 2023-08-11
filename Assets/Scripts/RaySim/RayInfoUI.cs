@@ -24,22 +24,14 @@ namespace RaySim
         }
         public void SelectColor()
         {
-            rayInfo.GetUGUILineRenderer().color = Color.magenta;
+            rayInfo.SelectColor();
             thisImage.color = new Color(0.8f,0.5f,0.5f);
-            if (rayInfo.Child.ui != null)
-            {
-                rayInfo.Child.ui.SelectColor();
-            }
         }
 
         public void ResetColor()
         {
-            rayInfo.GetUGUILineRenderer().color = Color.black;
+            rayInfo.ResetColor();
             thisImage.color = Color.white;
-            if (rayInfo.Child.ui != null)
-            {
-                rayInfo.Child.ui.ResetColor();
-            }
         }
     }
 }

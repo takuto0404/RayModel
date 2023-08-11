@@ -15,6 +15,7 @@ namespace Line
         [SerializeField] private LineInfo linePrefab;
         [SerializeField] private RayInfo rayPrefab;
         [SerializeField] private float speed;
+        private int _lineId = 0;
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void Init()
         {
@@ -141,7 +142,7 @@ namespace Line
                 {
                     var ray = (RayInfo)newLineOrRay;
                     ray.Init(startPos,endPos - startPos,endPos);
-                    RayManager.Instance.CreateRayAsUI(ray);
+                    RayManager.Instance.CreateRay(ray);
                 
                     UIPresenter.Instance.MakeRayContents();
                     RayManager.Instance.UpdateRayPosition();
@@ -149,7 +150,8 @@ namespace Line
                 else
                 {
                     var line = (LineInfo)newLineOrRay;
-                    line.Init(startPos,endPos,LineType.Mirror,new [] { MaterialType.Air });
+                    line.Init(startPos,endPos,LineType.Mirror,new [] { MaterialType.Air },_lineId);
+                    _lineId++;
                     LineManager.Instance.CreateLineAsUI(line);
                 
                     UIPresenter.Instance.MakeLineContents();

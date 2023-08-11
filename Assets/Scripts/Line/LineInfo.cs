@@ -6,12 +6,13 @@ namespace Line
     [RequireComponent(typeof(UGUILineRenderer))]
     public class LineInfo : MonoBehaviour,ILineBeAble
     {
-        public void Init(Vector2 startPoint, Vector2 endPoint, LineType lineType, MaterialType[] materialTypes)
+        public void Init(Vector2 startPoint, Vector2 endPoint, LineType lineType, MaterialType[] materialTypes,int id)
         {
             StartPoint = startPoint;
             EndPoint = endPoint;
             LineType = lineType;
             MaterialTypes = materialTypes;
+            Id = id;
             GetUGUILineRenderer();
         }
 
@@ -29,6 +30,7 @@ namespace Line
         public Vector2 StartPoint { get; private set; }
         public Vector2 EndPoint { get; private set; }
         public LineType LineType { get; private set; }
+        public int Id { get; private set; }
         public MaterialType[] MaterialTypes { get; private set; }
         private UGUILineRenderer lineRenderer;
     }
