@@ -18,6 +18,7 @@ namespace RaySim
         {
             rayInfo = newRayInfo;
             rayNumberText.text = number.ToString();
+            vectorText.text = Mathf.Atan2(newRayInfo.Vector.y,newRayInfo.Vector.x).ToString();
             var interval = LineGrid.Instance.interval;
             startPointText.text = $"({newRayInfo.StartPoint.x / interval},{newRayInfo.StartPoint.y / interval})";
         }

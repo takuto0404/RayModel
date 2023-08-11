@@ -63,20 +63,52 @@ namespace RaySim
                 var wallResult = SearchWall(ray);
                 if (wallResult.obstacle != null)
                 {
+                    var line = wallResult.obstacle;
                     endPos = wallResult.pos;
                     ray.EndPoint = wallResult.pos;
-                    ray.obstacle = wallResult.obstacle;
+                    ray.obstacle = line;
+
+                    if (line.LineType == LineType.Mirror)
+                    {
+                        //うまくいけばここもっと省略できそう
+                        Vector2 normal;
+                        var lineVector = line.EndPoint - line.StartPoint;
+                        if ((int)Mathf.Sign(lineVector.x) == (int)Mathf.Sign(lineVector.y))
+                        {
+                            if (lineVector.x / lineVector.y < ray.Vector.x / ray.Vector.y)
+                            {
+                                normal = new Vector2(Mathf.Abs(lineVector.x), -Mathf.Abs(lineVector.y));
+                            }
+                            else
+                            {
+                                normal = new Vector2(-Mathf.Abs(lineVector.x), Mathf.Abs(lineVector.y));
+                            }
+                        }
+                        else
+                        {
+                            if ((int)Mathf.Sign(lineVector.x) == -1)
+                            {
+                                lineVector *= new Vector2(-1, -1);
+                            }
+                            if (lineVector.x / lineVector.y < ray.Vector.x / ray.Vector.y)
+                            {
+                                normal = new Vector2(Mathf.Abs(lineVector.x), -Mathf.Abs(lineVector.y));
+                            }
+                            else
+                            {
+                                normal = new Vector2(-Mathf.Abs(lineVector.x), Mathf.Abs(lineVector.y));
+                            }
+                        }
+
+                        normal /= (Vector2.zero - normal).magnitude;
+                        var reflect = Vector2.Reflect(ray.Vector, normal);
+                        Debug.Log(reflect);
+                    }
                 }
                 
         
                 ray.GetUGUILineRenderer().SetPositions(new[] { ray.StartPoint - LineGrid.Instance.totalMisalignment, endPos - LineGrid.Instance.totalMisalignment});
             }
-        }
-        
-        private bool IsNull(GameObject var)
-        {
-            var go = var;
-            return go == null;
         }
 
         private (LineInfo obstacle,Vector2 pos) SearchWall(RayInfo rayInfo)
@@ -93,16 +125,16 @@ namespace RaySim
 
                 var pos = MyMath.Calculator.LineIntersection(line.StartPoint, line.EndPoint, rayInfo.StartPoint,
                     rayInfo.EndPoint);
-                var x = Math.Max(line.StartPoint.x, line.EndPoint.x) > pos.x &&
-                        pos.x > Math.Min(line.StartPoint.x, line.EndPoint.x);
-                var y = Math.Max(line.StartPoint.y, line.EndPoint.y) > pos.y &&
-                        pos.y > Math.Min(line.StartPoint.y, line.EndPoint.y);
+                var x = Mathf.Max(line.StartPoint.x, line.EndPoint.x) >= pos.x &&
+                        pos.x >= Math.Min(line.StartPoint.x, line.EndPoint.x);
+                var y = Mathf.Max(line.StartPoint.y, line.EndPoint.y) >= pos.y &&
+                        pos.y >= Math.Min(line.StartPoint.y, line.EndPoint.y);
                 if (!x || !y)
                 {
                     continue;
                 }
 
-                var rayMinusOrPlus = (rayInfo.Vector.x > 0, rayInfo.Vector.y > 0);
+                var rayMinusOrPlus = (rayInfo.Vector.x >= 0, rayInfo.Vector.y >= 0);
                 var posMinusOrPlus = (pos.x - rayInfo.StartPoint.x > 0,pos.y - rayInfo.StartPoint.y > 0);
                 if (rayMinusOrPlus != posMinusOrPlus)
                 {
