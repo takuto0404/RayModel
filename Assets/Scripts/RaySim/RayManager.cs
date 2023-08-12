@@ -15,7 +15,7 @@ namespace RaySim
         [SerializeField] private RayInfo rayPrefab;
         [SerializeField] private Transform canvasTransform;
         private List<RayInfo> _reserve = new();
-        private int roopNum = 0;
+        private List<RayInfo> _destroyReserve = new();
 
         public List<RayInfo> GetAllRays()
         {
@@ -26,16 +26,11 @@ namespace RaySim
         {
             _rayObjects.Add(rayInfo);
         }
-
-        private bool IsNull(GameObject var)
-        {
-            var go = var;
-            return go == null;
-        }
+        
 
         public void UpdateRayPosition(int a)
         {
-            if (a > 2)
+            if (a > 20)
             {
                 Debug.Log("A");
                 return;
@@ -89,46 +84,83 @@ namespace RaySim
 
                     ray.EndPoint = endPos;
                 }
-
-                var wallResult = SearchWall(ray);
-                if (wallResult.obstacle != null)
+                var obstacle = SearchWall(ray);
+                if (obstacle.obstacle != null)
                 {
-                    if (wallResult.obstacle.Id != ray.obstacleId)
+                    var line = obstacle.obstacle;
+                    if (ray.obstacleId != -1 && ray.obstacleId != line.Id)
                     {
-                        ray.DestroyChild(false);
+                        var destroyed = ray.DestroyChild(false);
+                        
+                        destroyed.ForEach(_destroyReserve.Add);
+                        break;
                     }
-
-                    var line = wallResult.obstacle;
-                    endPos = wallResult.pos;
-                    ray.EndPoint = wallResult.pos;
-                    ray.obstacleId = line.Id;
-
-                    if (ray.child == null)
+                    if(ray.child == null)
                     {
-                        Debug.Log($"{wallResult.pos}に壁があって子供がいない");
+                        ray.EndPoint = obstacle.pos;
+                        var isPlusPlusAngle =
+                            (line.StartPoint.x > line.EndPoint.x && line.StartPoint.y > line.EndPoint.y) ||
+                            (line.EndPoint.x > line.StartPoint.x && line.EndPoint.y > line.StartPoint.y);
+                        var lineVector = line.EndPoint - line.StartPoint;
+                        if (lineVector.x < 0) lineVector *= -1;
+                        var normal = new Vector2(Mathf.Abs(lineVector.y),Mathf.Abs(lineVector.x));
+                        var lineAngle = Mathf.Atan2(lineVector.x,lineVector.y);
+                        var rayAngle = Mathf.Atan2(ray.Vector.x, ray.Vector.y);
+                        if (isPlusPlusAngle)
+                        {
+                            if (lineAngle < rayAngle)
+                            {
+                                normal *= new Vector2(1, -1);
+                            }
+                            else
+                            {
+                                normal *= new Vector2(-1, 1);
+                            }
+                        }
+                        else if((int)line.StartPoint.x == (int)line.EndPoint.x)
+                        {
+                            if (ray.StartPoint.y > obstacle.pos.y)
+                            {
+                                normal = Vector2.left;
+                            }
+                            else
+                            {
+                                normal = Vector2.right;
+                            }
+                        }
+                        else if ((int)line.StartPoint.y == (int)line.EndPoint.y)
+                        {
+                            if (ray.StartPoint.x > obstacle.pos.x)
+                            {
+                                normal = Vector2.up;
+                            }
+                            else
+                            {
+                                normal = Vector2.down;
+                            }
+                        }
+                        else
+                        {
+                            if (lineAngle < rayAngle)
+                            {
+                                normal *= new Vector2(1, 1);
+                            }
+                            else
+                            {
+                                normal *= new Vector2(-1, -1);
+                            }
+                        }
+                        normal /= (normal - Vector2.zero).magnitude;
+
                         if (line.LineType == LineType.Mirror)
                         {
-                            var lineVector = line.EndPoint - line.StartPoint;
-                            Vector2 normal = new Vector2(lineVector.y,lineVector.x);
-                            
-                            if (startPos.x < endPos.x)
-                            {
-                                normal.x *= -1;
-                            }
-
-                            if (startPos.y < endPos.y)
-                            {
-                                normal.y *= -1;
-                            }
-
-                            normal /= (Vector2.zero - normal).magnitude;
-
                             var reflect = Vector2.Reflect(ray.Vector, normal);
-
-                            var newRay = Instantiate(rayPrefab, Vector2.zero, Quaternion.identity, canvasTransform);
-                            newRay.Init(ray.EndPoint, reflect, ray.EndPoint + reflect);
+                            var newRay = Instantiate(rayPrefab, canvasTransform);
+                            newRay.Init(ray.EndPoint,reflect,ray.EndPoint + reflect);
                             ray.child = newRay;
+                            ray.obstacleId = line.Id;
                             _reserve.Add(newRay);
+                            break;
                         }
                     }
                 }
@@ -137,7 +169,9 @@ namespace RaySim
                     if (ray.obstacleId != -1)
                     {
                         var destroyed = ray.DestroyChild(false);
-                        destroyed.ForEach(item => _rayObjects.Remove(item));
+                        
+                        destroyed.ForEach(_destroyReserve.Add);
+                        break;
                     }
                 }
                 
@@ -154,8 +188,13 @@ namespace RaySim
                 UIPresenter.Instance.MakeRayContents();
                 UpdateRayPosition(a + 1);
             }
-        }
 
+            if (_destroyReserve.Count > 0)
+            {
+                _destroyReserve.ForEach(item => _rayObjects.Remove(item));
+                _destroyReserve = new();
+            }
+        }
         private (LineInfo obstacle, Vector2 pos) SearchWall(RayInfo rayInfo)
         {
             (LineInfo lineInfo, Vector2 pos) mostNearObstacle = (null, Vector2.zero);
