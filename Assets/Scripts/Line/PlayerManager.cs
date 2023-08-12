@@ -47,7 +47,7 @@ namespace Line
 
                     Move(mousePos);
                     LineManager.Instance.UpdateLinePosition();
-                    RayManager.Instance.UpdateRayPosition();
+                    RayManager.Instance.UpdateRaysPosition();
                 }
 
                 return;
@@ -125,7 +125,7 @@ namespace Line
                 bool doContain;
                 if (result == 0)
                 {
-                    doContain = RayManager.Instance.GetAllRays().Select(ray => (ray.StartPoint, ray.EndPoint)).Where(poses => poses == (startPos, endPos)).ToArray().Length > 0;
+                    doContain = RayManager.Instance.GetAllParentRays().Select(ray => (ray.StartPoint, ray.EndPoint)).Where(poses => poses == (startPos, endPos)).ToArray().Length > 0;
                 }
                 else
                 {
@@ -145,7 +145,7 @@ namespace Line
                     RayManager.Instance.CreateRay(ray);
                 
                     UIPresenter.Instance.MakeRayContents();
-                    RayManager.Instance.UpdateRayPosition();
+                    RayManager.Instance.UpdateRaysPosition();
                 }
                 else
                 {

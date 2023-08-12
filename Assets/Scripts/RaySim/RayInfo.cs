@@ -16,6 +16,7 @@ namespace RaySim
             EndPoint = endPoint;
             _lineRenderer = GetUGUILineRenderer();
             obstacleId = -1;
+            childNest = 1;
         }
 
         public List<RayInfo> DestroyChild(bool destroyThis)
@@ -65,6 +66,7 @@ namespace RaySim
         private UGUILineRenderer _lineRenderer;
         
         public RayInfo child;
+        public int childNest;
         public bool isChild;
         public int obstacleId;
     }

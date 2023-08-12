@@ -26,7 +26,7 @@ namespace UI
             {
                 rayInfo = _selectingRay.rayInfo;
             }
-            _beforeSelectRay = uiView.MakeRayContents(RayManager.Instance.GetAllRays(),rayInfo);
+            _beforeSelectRay = uiView.MakeRayContents(RayManager.Instance.GetAllParentRays(),rayInfo);
         }
         private async UniTask SelectRayButtonAsync(CancellationToken ct)
         {
