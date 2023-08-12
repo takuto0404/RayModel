@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Default;
 using Line;
 using UI;
@@ -19,7 +20,7 @@ namespace RaySim
 
         public List<RayInfo> GetAllRays()
         {
-            return _rayObjects;
+            return _rayObjects.Where(ray => !ray.isChild).ToList();
         }
 
         public void CreateRay(RayInfo rayInfo)
@@ -85,6 +86,7 @@ namespace RaySim
                     ray.EndPoint = endPos;
                 }
                 var obstacle = SearchWall(ray);
+                Debug.Log(obstacle.obstacle);
                 if (obstacle.obstacle != null)
                 {
                     var line = obstacle.obstacle;
@@ -95,14 +97,17 @@ namespace RaySim
                         destroyed.ForEach(_destroyReserve.Add);
                         break;
                     }
+                    
                     if(ray.child == null)
                     {
                         ray.EndPoint = obstacle.pos;
+                        
                         var isPlusPlusAngle =
                             (line.StartPoint.x > line.EndPoint.x && line.StartPoint.y > line.EndPoint.y) ||
                             (line.EndPoint.x > line.StartPoint.x && line.EndPoint.y > line.StartPoint.y);
                         var lineVector = line.EndPoint - line.StartPoint;
                         if (lineVector.x < 0) lineVector *= -1;
+                        
                         var normal = new Vector2(Mathf.Abs(lineVector.y),Mathf.Abs(lineVector.x));
                         var lineAngle = Mathf.Atan2(lineVector.x,lineVector.y);
                         var rayAngle = Mathf.Atan2(ray.Vector.x, ray.Vector.y);
@@ -158,6 +163,7 @@ namespace RaySim
                             var newRay = Instantiate(rayPrefab, canvasTransform);
                             newRay.Init(ray.EndPoint,reflect,ray.EndPoint + reflect);
                             ray.child = newRay;
+                            newRay.isChild = true;
                             ray.obstacleId = line.Id;
                             _reserve.Add(newRay);
                             break;
@@ -211,11 +217,12 @@ namespace RaySim
                     rayInfo.EndPoint);
                 if (pos == rayInfo.StartPoint) continue;
                 var x = Mathf.Max(line.StartPoint.x, line.EndPoint.x) >= pos.x &&
-                        pos.x >= Math.Min(line.StartPoint.x, line.EndPoint.x);
+                        pos.x >= Math.Min(line.StartPoint.x, line.EndPoint.x) || (int)line.StartPoint.x == (int)line.EndPoint.x;
                 var y = Mathf.Max(line.StartPoint.y, line.EndPoint.y) >= pos.y &&
-                        pos.y >= Math.Min(line.StartPoint.y, line.EndPoint.y);
+                        pos.y >= Math.Min(line.StartPoint.y, line.EndPoint.y) || (int)line.StartPoint.y == (int)line.EndPoint.y;
                 if (!x || !y)
                 {
+                    Debug.Log("b");
                     continue;
                 }
                 
@@ -231,7 +238,6 @@ namespace RaySim
                     mostNearObstacle = (line, pos);
                     continue;
                 }
-
                 var beforeDistance = (mostNearObstacle.pos - rayInfo.StartPoint).magnitude;
                 var distance = (pos - rayInfo.StartPoint).magnitude;
                 if (distance < beforeDistance)

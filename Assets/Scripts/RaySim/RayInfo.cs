@@ -10,6 +10,7 @@ namespace RaySim
     {
         public void Init(Vector2 startPoint, Vector2 vector,Vector2 endPoint)
         {
+            isChild = false;
             StartPoint = startPoint;
             Vector = vector;
             EndPoint = endPoint;
@@ -29,7 +30,7 @@ namespace RaySim
                 list = child.DestroyChild(true);
                 child = null;
                 obstacleId = -1;
-                list.Add(this);
+                if(destroyThis)list.Add(this);
             }
             if(destroyThis)Destroy(gameObject);
             return list;
@@ -64,6 +65,7 @@ namespace RaySim
         private UGUILineRenderer _lineRenderer;
         
         public RayInfo child;
+        public bool isChild;
         public int obstacleId;
     }
 }
