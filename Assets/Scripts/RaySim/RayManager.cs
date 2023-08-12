@@ -29,14 +29,8 @@ namespace RaySim
         }
         
 
-        public void UpdateRayPosition(int a)
+        public void UpdateRayPosition()
         {
-            if (a > 20)
-            {
-                Debug.Log("A");
-                return;
-            }
-
             foreach (var ray in _rayObjects)
             {
                 var startPos = ray.EndPoint;
@@ -86,7 +80,6 @@ namespace RaySim
                     ray.EndPoint = endPos;
                 }
                 var obstacle = SearchWall(ray);
-                Debug.Log(obstacle.obstacle);
                 if (obstacle.obstacle != null)
                 {
                     var line = obstacle.obstacle;
@@ -192,7 +185,7 @@ namespace RaySim
                 _reserve.ForEach(CreateRay);
                 _reserve = new();
                 UIPresenter.Instance.MakeRayContents();
-                UpdateRayPosition(a + 1);
+                UpdateRayPosition();
             }
 
             if (_destroyReserve.Count > 0)
@@ -222,7 +215,6 @@ namespace RaySim
                         pos.y >= Math.Min(line.StartPoint.y, line.EndPoint.y) || (int)line.StartPoint.y == (int)line.EndPoint.y;
                 if (!x || !y)
                 {
-                    Debug.Log("b");
                     continue;
                 }
                 
