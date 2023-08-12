@@ -47,44 +47,48 @@ namespace RaySim
                 var endPos = ray.EndPoint;
                 var vector = ray.Vector;
 
-                var max = LineGrid.Instance.maxViewPos;
-                var min = LineGrid.Instance.minViewPos;
+                if (ray.obstacleId == -1)
+                {
 
-                Vector2 size;
-                if (vector.x > 0 && vector.y > 0)
-                {
-                    size = max;
-                }
-                else if (vector.x > 0 && vector.y <= 0)
-                {
-                    size = new Vector2(max.x, min.y);
-                }
-                else if (vector.x <= 0 && vector.y > 0)
-                {
-                    size = new Vector2(min.x, max.y);
-                }
-                else
-                {
-                    size = min;
-                }
+                    var max = LineGrid.Instance.maxViewPos;
+                    var min = LineGrid.Instance.minViewPos;
 
-                if (Mathf.Abs(endPos.x) < Mathf.Abs(size.x))
-                {
-                    if (ray.Vector.x != 0)
+                    Vector2 size;
+                    if (vector.x > 0 && vector.y > 0)
                     {
-                        endPos = startPos + vector * ((size.x - startPos.x) / vector.x);
+                        size = max;
                     }
-                }
-
-                if (Mathf.Abs(endPos.y) < Mathf.Abs(size.y))
-                {
-                    if (ray.Vector.y != 0)
+                    else if (vector.x > 0 && vector.y <= 0)
                     {
-                        endPos = startPos + vector * ((size.y - startPos.y) / vector.y);
+                        size = new Vector2(max.x, min.y);
                     }
-                }
+                    else if (vector.x <= 0 && vector.y > 0)
+                    {
+                        size = new Vector2(min.x, max.y);
+                    }
+                    else
+                    {
+                        size = min;
+                    }
 
-                ray.EndPoint = endPos;
+                    if (Mathf.Abs(endPos.x) < Mathf.Abs(size.x))
+                    {
+                        if (ray.Vector.x != 0)
+                        {
+                            endPos = startPos + vector * ((size.x - startPos.x) / vector.x);
+                        }
+                    }
+
+                    if (Mathf.Abs(endPos.y) < Mathf.Abs(size.y))
+                    {
+                        if (ray.Vector.y != 0)
+                        {
+                            endPos = startPos + vector * ((size.y - startPos.y) / vector.y);
+                        }
+                    }
+
+                    ray.EndPoint = endPos;
+                }
 
                 var wallResult = SearchWall(ray);
                 if (wallResult.obstacle != null)
@@ -101,11 +105,12 @@ namespace RaySim
 
                     if (ray.child == null)
                     {
+                        Debug.Log($"{wallResult.pos}に壁があって子供がいない");
                         if (line.LineType == LineType.Mirror)
                         {
                             var lineVector = line.EndPoint - line.StartPoint;
                             Vector2 normal = new Vector2(lineVector.y,lineVector.x);
-
+                            
                             if (startPos.x < endPos.x)
                             {
                                 normal.x *= -1;
@@ -121,8 +126,7 @@ namespace RaySim
                             var reflect = Vector2.Reflect(ray.Vector, normal);
 
                             var newRay = Instantiate(rayPrefab, Vector2.zero, Quaternion.identity, canvasTransform);
-                            newRay.Init(ray.EndPoint, reflect, ray.EndPoint - reflect);
-                            Debug.Log(reflect == newRay.Vector);
+                            newRay.Init(ray.EndPoint, reflect, ray.EndPoint + reflect);
                             ray.child = newRay;
                             _reserve.Add(newRay);
                         }
@@ -166,6 +170,7 @@ namespace RaySim
 
                 var pos = MyMath.Calculator.LineIntersection(line.StartPoint, line.EndPoint, rayInfo.StartPoint,
                     rayInfo.EndPoint);
+                if (pos == rayInfo.StartPoint) continue;
                 var x = Mathf.Max(line.StartPoint.x, line.EndPoint.x) >= pos.x &&
                         pos.x >= Math.Min(line.StartPoint.x, line.EndPoint.x);
                 var y = Mathf.Max(line.StartPoint.y, line.EndPoint.y) >= pos.y &&
@@ -174,14 +179,14 @@ namespace RaySim
                 {
                     continue;
                 }
-
+                
                 var rayMinusOrPlus = (rayInfo.Vector.x >= 0, rayInfo.Vector.y >= 0);
                 var posMinusOrPlus = (pos.x - rayInfo.StartPoint.x >= 0, pos.y - rayInfo.StartPoint.y >= 0);
                 if (rayMinusOrPlus != posMinusOrPlus)
                 {
                     continue;
                 }
-
+                
                 if (mostNearObstacle.lineInfo == null)
                 {
                     mostNearObstacle = (line, pos);

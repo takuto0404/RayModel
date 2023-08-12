@@ -28,6 +28,7 @@ namespace RaySim
             {
                 list = child.DestroyChild(true);
                 child = null;
+                obstacleId = -1;
                 list.Add(this);
             }
             if(destroyThis)Destroy(gameObject);
