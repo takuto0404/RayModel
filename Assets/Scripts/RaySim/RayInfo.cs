@@ -45,7 +45,7 @@ namespace RaySim
 
         public void ResetColor()
         {
-            GetUGUILineRenderer().color = Color.black;
+            GetUGUILineRenderer().color = Color.red;
             if(child != null)child.ResetColor();
         }
         
