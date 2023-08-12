@@ -15,6 +15,7 @@ namespace RaySim
         [SerializeField] private RayInfo rayPrefab;
         [SerializeField] private Transform canvasTransform;
         private List<RayInfo> _reserve = new();
+        private int roopNum = 0;
 
         public List<RayInfo> GetAllRays()
         {
@@ -32,8 +33,14 @@ namespace RaySim
             return go == null;
         }
 
-        public void UpdateRayPosition()
+        public void UpdateRayPosition(int a)
         {
+            if (a > 2)
+            {
+                Debug.Log("A");
+                return;
+            }
+
             foreach (var ray in _rayObjects)
             {
                 var startPos = ray.EndPoint;
@@ -63,12 +70,18 @@ namespace RaySim
 
                 if (Mathf.Abs(endPos.x) < Mathf.Abs(size.x))
                 {
-                    endPos = startPos + vector * ((size.x - startPos.x) / vector.x);
+                    if (ray.Vector.x != 0)
+                    {
+                        endPos = startPos + vector * ((size.x - startPos.x) / vector.x);
+                    }
                 }
 
                 if (Mathf.Abs(endPos.y) < Mathf.Abs(size.y))
                 {
-                    endPos = startPos + vector * ((size.y - startPos.y) / vector.y);
+                    if (ray.Vector.y != 0)
+                    {
+                        endPos = startPos + vector * ((size.y - startPos.y) / vector.y);
+                    }
                 }
 
                 ray.EndPoint = endPos;
@@ -80,6 +93,7 @@ namespace RaySim
                     {
                         ray.DestroyChild(false);
                     }
+
                     var line = wallResult.obstacle;
                     endPos = wallResult.pos;
                     ray.EndPoint = wallResult.pos;
@@ -89,46 +103,26 @@ namespace RaySim
                     {
                         if (line.LineType == LineType.Mirror)
                         {
-                            Vector2 normal;
                             var lineVector = line.EndPoint - line.StartPoint;
-                            if ((int)Mathf.Sign(lineVector.x) == (int)Mathf.Sign(lineVector.y))
-                            {
-                                if (lineVector.x / lineVector.y < ray.Vector.x / ray.Vector.y)
-                                {
-                                    Debug.Log("a");
-                                    normal = new Vector2(Mathf.Abs(lineVector.x), -Mathf.Abs(lineVector.y));
-                                }
-                                else
-                                {
-                                    Debug.Log("b");
-                                    normal = new Vector2(-Mathf.Abs(lineVector.x), Mathf.Abs(lineVector.y));
-                                }
-                            }
-                            else
-                            {
-                                if ((int)Mathf.Sign(lineVector.x) == -1)
-                                {
-                                    Debug.Log("c");
-                                    lineVector *= new Vector2(-1, -1);
-                                }
+                            Vector2 normal = new Vector2(lineVector.y,lineVector.x);
 
-                                if (lineVector.x / lineVector.y < ray.Vector.x / ray.Vector.y)
-                                {
-                                    Debug.Log("d");
-                                    normal = new Vector2(-Mathf.Abs(lineVector.y), Mathf.Abs(lineVector.x));
-                                }
-                                else
-                                {
-                                    Debug.Log("e");
-                                    normal = new Vector2(Mathf.Abs(lineVector.y), -Mathf.Abs(lineVector.x));
-                                }
+                            if (startPos.x < endPos.x)
+                            {
+                                normal.x *= -1;
+                            }
+
+                            if (startPos.y < endPos.y)
+                            {
+                                normal.y *= -1;
                             }
 
                             normal /= (Vector2.zero - normal).magnitude;
+
                             var reflect = Vector2.Reflect(ray.Vector, normal);
 
                             var newRay = Instantiate(rayPrefab, Vector2.zero, Quaternion.identity, canvasTransform);
-                            newRay.Init(ray.EndPoint, reflect, reflect);
+                            newRay.Init(ray.EndPoint, reflect, ray.EndPoint - reflect);
+                            Debug.Log(reflect == newRay.Vector);
                             ray.child = newRay;
                             _reserve.Add(newRay);
                         }
@@ -138,10 +132,11 @@ namespace RaySim
                 {
                     if (ray.obstacleId != -1)
                     {
-                        ray.DestroyChild(false);
+                        var destroyed = ray.DestroyChild(false);
+                        destroyed.ForEach(item => _rayObjects.Remove(item));
                     }
                 }
-
+                
                 ray.GetUGUILineRenderer().SetPositions(new[]
                 {
                     ray.StartPoint - LineGrid.Instance.totalMisalignment, endPos - LineGrid.Instance.totalMisalignment
@@ -153,7 +148,7 @@ namespace RaySim
                 _reserve.ForEach(CreateRay);
                 _reserve = new();
                 UIPresenter.Instance.MakeRayContents();
-                UpdateRayPosition();
+                UpdateRayPosition(a + 1);
             }
         }
 
@@ -181,7 +176,7 @@ namespace RaySim
                 }
 
                 var rayMinusOrPlus = (rayInfo.Vector.x >= 0, rayInfo.Vector.y >= 0);
-                var posMinusOrPlus = (pos.x - rayInfo.StartPoint.x > 0, pos.y - rayInfo.StartPoint.y > 0);
+                var posMinusOrPlus = (pos.x - rayInfo.StartPoint.x >= 0, pos.y - rayInfo.StartPoint.y >= 0);
                 if (rayMinusOrPlus != posMinusOrPlus)
                 {
                     continue;

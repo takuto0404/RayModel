@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Default;
 using Line;
 using UnityEngine;
@@ -16,14 +17,21 @@ namespace RaySim
             obstacleId = -1;
         }
 
-        public void DestroyChild(bool destroyThis)
+        public List<RayInfo> DestroyChild(bool destroyThis)
         {
-            if (child != null)
+            List<RayInfo> list;
+            if (child == null)
             {
-                child.DestroyChild(true);
+                list = new List<RayInfo>{this};
+            }
+            else
+            {
+                list = child.DestroyChild(true);
                 child = null;
+                list.Add(this);
             }
             if(destroyThis)Destroy(gameObject);
+            return list;
         }
 
         public void SelectColor()

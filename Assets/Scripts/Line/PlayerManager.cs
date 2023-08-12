@@ -47,7 +47,7 @@ namespace Line
 
                     Move(mousePos);
                     LineManager.Instance.UpdateLinePosition();
-                    RayManager.Instance.UpdateRayPosition();
+                    RayManager.Instance.UpdateRayPosition(0);
                 }
 
                 return;
@@ -145,7 +145,7 @@ namespace Line
                     RayManager.Instance.CreateRay(ray);
                 
                     UIPresenter.Instance.MakeRayContents();
-                    RayManager.Instance.UpdateRayPosition();
+                    RayManager.Instance.UpdateRayPosition(0);
                 }
                 else
                 {

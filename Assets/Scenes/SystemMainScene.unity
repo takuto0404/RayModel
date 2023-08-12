@@ -1331,13 +1331,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c258423cac5c475caa7616fee33fdae3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  totalMisalignment: {x: -152.4, y: -152.4}
+  totalMisalignment: {x: -170.4, y: -170.4}
   lineRenderer: {fileID: 2333722863418321004, guid: 9f03a2c3a1a3a45d68e532d151970e9a, type: 3}
   canvasTransform: {fileID: 591880353}
   interval: 60
   viewSize: {x: 1920, y: 1080}
   maxViewPos: {x: 895.1, y: 475.1}
-  minViewPos: {x: -1112.4, y: -692.4}
+  minViewPos: {x: -1130.4, y: -710.4}
 --- !u!1 &1019135633
 GameObject:
   m_ObjectHideFlags: 0
