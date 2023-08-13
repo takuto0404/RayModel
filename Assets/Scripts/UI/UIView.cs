@@ -32,8 +32,8 @@ namespace Line
         [SerializeField] private Button mirrorButton;
         [SerializeField] private Button boundaryButton;
         [SerializeField] private GameObject boundaryContent;
-        [SerializeField] private TMP_Text inText;
-        [SerializeField] private TMP_Text outText;
+        [SerializeField] private TMP_InputField inText;
+        [SerializeField] private TMP_InputField outText;
         [SerializeField] private Button goButton;
 
         private List<LineInfoUI> _createdLine = new ();
@@ -167,6 +167,9 @@ namespace Line
 
         public async UniTask<(LineType lineType, MaterialType[] materialTypes)> SelectLineType(CancellationToken ct)
         {
+            boundaryContent.SetActive(false);
+            inText.text = "";
+            outText.text = "";
             selectView.SetActive(true);
             var selecting = LineType.Mirror;
             while (true)

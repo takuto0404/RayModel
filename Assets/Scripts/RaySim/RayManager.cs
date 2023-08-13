@@ -104,8 +104,8 @@ namespace RaySim
                     if (lineVector.x < 0) lineVector *= -1;
 
                     var normal = new Vector2(Mathf.Abs(lineVector.y), Mathf.Abs(lineVector.x));
-                    var lineAngle = Mathf.Atan2(lineVector.x, lineVector.y);
-                    var rayAngle = Mathf.Atan2(ray.Vector.x, ray.Vector.y);
+                    var lineAngle = Mathf.Atan2(lineVector.y, lineVector.x);
+                    var rayAngle = Mathf.Atan2(ray.Vector.y, ray.Vector.x);
                     var isIn = false;
                     if (isPlusPlusAngle)
                     {
@@ -180,8 +180,7 @@ namespace RaySim
                     }
                     else
                     {
-                        //屈折率の計算
-                        var refract = Refract(ray.Vector, normal, line.MaterialTypes[0],line.MaterialTypes[1]);
+                        var refract = Refract(ray.Vector, normal, _refractiveIndex[line.MaterialTypes[0]],_refractiveIndex[line.MaterialTypes[1]]);
                         var newRay = Instantiate(rayPrefab, canvasTransform);
                         newRay.Init(ray.EndPoint, refract, ray.EndPoint + refract);
                         ray.child = newRay;
@@ -190,8 +189,8 @@ namespace RaySim
                         if (newRay.childNest > 40)
                         {
 #if UNITY_EDITOR
-                            Debug.Log("屈折が複雑になりすぎたため強制終了します。");                        
-                            EditorApplication.isPlaying = false;
+    Debug.Log("屈折が複雑になりすぎたため強制終了します。");                        
+    EditorApplication.isPlaying = false;
 #else
     Application.Quit();//ゲームプレイ終了
 #endif
@@ -217,16 +216,19 @@ namespace RaySim
                 ray.StartPoint - LineGrid.Instance.totalMisalignment, endPos - LineGrid.Instance.totalMisalignment
             });
         }
-
-        private Vector2 Refract(Vector2 inDirection, Vector2 normal,MaterialType n1,MaterialType n2)
+        
+        private Vector2 Refract(Vector2 inDirection, Vector2 normal,float refractiveIndex1,float refractiveIndex2)
         {
-            var inDirectionAngle = Mathf.Atan2(inDirection.x,inDirection.y);
-            var normalAngle = Mathf.Atan2(normal.x, normal.y);
-            if (Mathf.Abs(inDirectionAngle - normalAngle) >= 90) normalAngle %= 180;
-
-            var incidence = inDirectionAngle - normalAngle;
-            var refractionAngle = Mathf.Asin((_refractiveIndex[n1] / _refractiveIndex[n2]) * Mathf.Sin(incidence));
-            var outDirectionAngle = (normalAngle + 180) % 360 - refractionAngle;
+            var inDirectionAngle = -Mathf.Atan2(inDirection.y,inDirection.x);
+            var normalAngle = Mathf.Atan2(normal.y, normal.x);
+            var plusOrMinus = Mathf.Sign(inDirectionAngle - normalAngle);
+            var incidenceAngle = Mathf.Abs(inDirectionAngle - normalAngle);
+            var refractionAngle = Mathf.Asin(refractiveIndex1 / refractiveIndex2 * Mathf.Sin(incidenceAngle)) * Mathf.Rad2Deg;
+            if (float.IsNaN(refractionAngle))
+            {
+                Debug.Log("NaN");
+            }
+            var outDirectionAngle = -normalAngle + plusOrMinus * (90 - refractionAngle);
             var outVector = AngleToVector(outDirectionAngle);
             return outVector;
         }
