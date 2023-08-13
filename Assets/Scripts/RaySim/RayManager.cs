@@ -216,28 +216,34 @@ namespace RaySim
                 ray.StartPoint - LineGrid.Instance.totalMisalignment, endPos - LineGrid.Instance.totalMisalignment
             });
         }
+
+        [MenuItem("Original/A")]
+        private static void A()
+        {
+            Instance.Refract(new Vector2(0,-1), Vector2.up, 1.333f, 1.0f);
+        }
         
-        private Vector2 Refract(Vector2 inDirection, Vector2 normal,float refractiveIndex1,float refractiveIndex2)
+        private Vector2 Refract(Vector2 inDirection, Vector2 inNormal,float refractiveIndex1,float refractiveIndex2)
         {
             var inDirectionAngle = -Mathf.Atan2(inDirection.y,inDirection.x);
-            var normalAngle = Mathf.Atan2(normal.y, normal.x);
-            var plusOrMinus = Mathf.Sign(inDirectionAngle - normalAngle);
-            var incidenceAngle = Mathf.Abs(inDirectionAngle - normalAngle);
+            var normalAngle = Mathf.Atan2(inNormal.y, inNormal.x);
+            var incidenceAngle = inDirectionAngle - normalAngle;
             var refractionAngle = Mathf.Asin(refractiveIndex1 / refractiveIndex2 * Mathf.Sin(incidenceAngle)) * Mathf.Rad2Deg;
             if (float.IsNaN(refractionAngle))
             {
-                Debug.Log("NaN");
+                return Vector2.Reflect(inDirection, inNormal);
             }
-            var outDirectionAngle = -normalAngle + plusOrMinus * (90 - refractionAngle);
-            var outVector = AngleToVector(outDirectionAngle);
+            
+            var outDirectionAngle = -normalAngle * Mathf.Rad2Deg - refractionAngle;
+            var outVector = AngleToVector(outDirectionAngle) * 100;
+            Debug.Log($"{inDirectionAngle * Mathf.Rad2Deg}度で入射、{normalAngle * Mathf.Rad2Deg}度の法線ベクトルで、{incidenceAngle * Mathf.Rad2Deg}度の入射角、{refractionAngle}どの屈折角、{outDirectionAngle}={outVector}方向に屈折します。");
             return outVector;
         }
 
         private Vector2 AngleToVector(float angleDegrees)
         {
-            var angleRadians = Mathf.PI * angleDegrees / 180f;
-            var x = MathF.Cos(angleRadians);
-            var y = MathF.Sin(angleRadians);
+            var x = Mathf.Cos(angleDegrees * Mathf.Deg2Rad);
+            var y = Mathf.Sin(angleDegrees * Mathf.Deg2Rad);
             return new Vector2(x, y);
         }
         public void UpdateRaysPosition()
