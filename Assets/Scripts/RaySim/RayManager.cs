@@ -83,7 +83,7 @@ namespace RaySim
             }
 
             var obstacle = SearchWall(ray);
-            if (obstacle.obstacle != null)
+            if (obstacle.obstacle != null && ray.ignoreLine != obstacle.obstacle)
             {
                 var line = obstacle.obstacle;
                 if (ray.obstacleId != -1 && ray.obstacleId != line.Id)
@@ -121,19 +121,19 @@ namespace RaySim
                     }
                     else if ((int)line.StartPoint.x == (int)line.EndPoint.x)
                     {
-                        if (ray.StartPoint.y > obstacle.pos.y)
+                        if (ray.StartPoint.x > obstacle.pos.x)
                         {
-                            normal = Vector2.left;
+                            normal = Vector2.right;
                             isIn = true;
                         }
                         else
                         {
-                            normal = Vector2.right;
+                            normal = Vector2.left;
                         }
                     }
                     else if ((int)line.StartPoint.y == (int)line.EndPoint.y)
                     {
-                        if (ray.StartPoint.x > obstacle.pos.x)
+                        if (ray.StartPoint.y > obstacle.pos.y)
                         {
                             normal = Vector2.up;
                             isIn = true;
@@ -158,11 +158,14 @@ namespace RaySim
 
                     normal /= (normal - Vector2.zero).magnitude;
 
+                    
+                    
                     if (line.LineType == LineType.Mirror)
                     {
                         var reflect = Vector2.Reflect(ray.Vector, normal);
                         var newRay = Instantiate(rayPrefab, canvasTransform);
                         newRay.Init(ray.EndPoint, reflect, ray.EndPoint + reflect);
+                        newRay.ignoreLine = line;
                         ray.child = newRay;
                         newRay.isChild = true;
                         newRay.childNest = ray.childNest + 1;
@@ -183,6 +186,7 @@ namespace RaySim
                         var refract = Refract(ray.Vector, normal, _refractiveIndex[line.MaterialTypes[0]],_refractiveIndex[line.MaterialTypes[1]]);
                         var newRay = Instantiate(rayPrefab, canvasTransform);
                         newRay.Init(ray.EndPoint, refract, ray.EndPoint + refract);
+                        newRay.ignoreLine = line;
                         ray.child = newRay;
                         newRay.isChild = true;
                         newRay.childNest = ray.childNest + 1;
@@ -220,14 +224,44 @@ namespace RaySim
         [MenuItem("Original/A")]
         private static void A()
         {
-            Instance.Refract(new Vector2(0,-1), Vector2.up, 1.333f, 1.0f);
+            Instance.Refract(new Vector2(1,-1), Vector2.down, 1.333f, 1.0f);
         }
         
         private Vector2 Refract(Vector2 inDirection, Vector2 inNormal,float refractiveIndex1,float refractiveIndex2)
         {
-            var inDirectionAngle = -Mathf.Atan2(inDirection.y,inDirection.x);
+            var inDirectionAngle = Mathf.Atan2(inDirection.y,inDirection.x);
             var normalAngle = Mathf.Atan2(inNormal.y, inNormal.x);
-            var incidenceAngle = inDirectionAngle - normalAngle;
+            Debug.Log(inDirectionAngle);
+            Vector2 plusMinus;
+            var diff = (inDirectionAngle - normalAngle) * Mathf.Rad2Deg;
+            if (diff < -180) diff %= -180;
+            if (diff >= 180) diff %= 180;
+            if (diff > 90)
+            {
+                Debug.Log("A");
+                inDirectionAngle = 180 * Mathf.Deg2Rad - inDirectionAngle;
+                plusMinus = new Vector2(-1, -1);
+            }
+            else if (diff > 0)
+            {
+                plusMinus = new Vector2(1, -1);
+            }
+            else if (diff > -90)
+            {
+                plusMinus = new Vector2(1, 1);
+            }
+            else
+            {
+                inDirectionAngle = -180 * Mathf.Deg2Rad - inDirectionAngle;
+                plusMinus = new Vector2(-1, 1);
+            }
+            var incidenceAngle = -inDirectionAngle - normalAngle;
+            var isMinus = false;
+            if (incidenceAngle < 0)
+            {
+                incidenceAngle *= -1;
+                isMinus = true;
+            }
             var refractionAngle = Mathf.Asin(refractiveIndex1 / refractiveIndex2 * Mathf.Sin(incidenceAngle)) * Mathf.Rad2Deg;
             if (float.IsNaN(refractionAngle))
             {
@@ -235,7 +269,9 @@ namespace RaySim
             }
             
             var outDirectionAngle = -normalAngle * Mathf.Rad2Deg - refractionAngle;
-            var outVector = AngleToVector(outDirectionAngle) * 100;
+            var outVector = AngleToVector(outDirectionAngle);
+            if (isMinus) outVector *= -1;
+            outVector *= plusMinus;
             Debug.Log($"{inDirectionAngle * Mathf.Rad2Deg}度で入射、{normalAngle * Mathf.Rad2Deg}度の法線ベクトルで、{incidenceAngle * Mathf.Rad2Deg}度の入射角、{refractionAngle}どの屈折角、{outDirectionAngle}={outVector}方向に屈折します。");
             return outVector;
         }
@@ -283,11 +319,11 @@ namespace RaySim
                 var pos = MyMath.Calculator.LineIntersection(line.StartPoint, line.EndPoint, rayInfo.StartPoint,
                     rayInfo.EndPoint);
                 if (pos == rayInfo.StartPoint) continue;
-                var x = Mathf.Max(line.StartPoint.x, line.EndPoint.x) >= pos.x &&
-                        pos.x >= Math.Min(line.StartPoint.x, line.EndPoint.x) ||
+                var x = Mathf.Max(line.StartPoint.x, line.EndPoint.x) > pos.x &&
+                        pos.x > Math.Min(line.StartPoint.x, line.EndPoint.x) ||
                         (int)line.StartPoint.x == (int)line.EndPoint.x;
-                var y = Mathf.Max(line.StartPoint.y, line.EndPoint.y) >= pos.y &&
-                        pos.y >= Math.Min(line.StartPoint.y, line.EndPoint.y) ||
+                var y = Mathf.Max(line.StartPoint.y, line.EndPoint.y) > pos.y &&
+                        pos.y > Math.Min(line.StartPoint.y, line.EndPoint.y) ||
                         (int)line.StartPoint.y == (int)line.EndPoint.y;
                 if (!x || !y)
                 {

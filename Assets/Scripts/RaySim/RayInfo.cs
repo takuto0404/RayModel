@@ -64,6 +64,7 @@ namespace RaySim
         public Vector2 EndPoint { get; set; }
         public Vector2 Vector { get; private set; }
         private UGUILineRenderer _lineRenderer;
+        public LineInfo ignoreLine;
         
         public RayInfo child;
         public int childNest;
