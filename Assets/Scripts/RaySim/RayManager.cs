@@ -18,6 +18,12 @@ namespace RaySim
         private List<RayInfo> _reserve = new();
         private List<RayInfo> _destroyReserve = new();
 
+        private Dictionary<MaterialType, float> _refractiveIndex = new Dictionary<MaterialType, float>()
+        {
+            { MaterialType.Water ,1.333f},
+            { MaterialType.Air ,1.000f}
+        };
+
         public List<RayInfo> GetAllParentRays()
         {
             return _rayObjects.Where(ray => !ray.isChild).ToList();
@@ -100,6 +106,7 @@ namespace RaySim
                     var normal = new Vector2(Mathf.Abs(lineVector.y), Mathf.Abs(lineVector.x));
                     var lineAngle = Mathf.Atan2(lineVector.x, lineVector.y);
                     var rayAngle = Mathf.Atan2(ray.Vector.x, ray.Vector.y);
+                    var isIn = false;
                     if (isPlusPlusAngle)
                     {
                         if (lineAngle < rayAngle)
@@ -109,6 +116,7 @@ namespace RaySim
                         else
                         {
                             normal *= new Vector2(-1, 1);
+                            isIn = true;
                         }
                     }
                     else if ((int)line.StartPoint.x == (int)line.EndPoint.x)
@@ -116,6 +124,7 @@ namespace RaySim
                         if (ray.StartPoint.y > obstacle.pos.y)
                         {
                             normal = Vector2.left;
+                            isIn = true;
                         }
                         else
                         {
@@ -127,6 +136,7 @@ namespace RaySim
                         if (ray.StartPoint.x > obstacle.pos.x)
                         {
                             normal = Vector2.up;
+                            isIn = true;
                         }
                         else
                         {
@@ -142,6 +152,7 @@ namespace RaySim
                         else
                         {
                             normal *= new Vector2(-1, -1);
+                            isIn = true;
                         }
                     }
 
@@ -158,8 +169,29 @@ namespace RaySim
                         if (newRay.childNest > 40)
                         {
 #if UNITY_EDITOR
-    Debug.Log("反射・屈折が複雑になりすぎたため強制終了します。");                        
+    Debug.Log("反射が複雑になりすぎたため強制終了します。");                        
     EditorApplication.isPlaying = false;
+#else
+    Application.Quit();//ゲームプレイ終了
+#endif
+                        }
+                        ray.obstacleId = line.Id;
+                        _reserve.Add(newRay);
+                    }
+                    else
+                    {
+                        //屈折率の計算
+                        var refract = Refract(ray.Vector, normal, line.MaterialTypes[0],line.MaterialTypes[1]);
+                        var newRay = Instantiate(rayPrefab, canvasTransform);
+                        newRay.Init(ray.EndPoint, refract, ray.EndPoint + refract);
+                        ray.child = newRay;
+                        newRay.isChild = true;
+                        newRay.childNest = ray.childNest + 1;
+                        if (newRay.childNest > 40)
+                        {
+#if UNITY_EDITOR
+                            Debug.Log("屈折が複雑になりすぎたため強制終了します。");                        
+                            EditorApplication.isPlaying = false;
 #else
     Application.Quit();//ゲームプレイ終了
 #endif
@@ -186,6 +218,26 @@ namespace RaySim
             });
         }
 
+        private Vector2 Refract(Vector2 inDirection, Vector2 normal,MaterialType n1,MaterialType n2)
+        {
+            var inDirectionAngle = Mathf.Atan2(inDirection.x,inDirection.y);
+            var normalAngle = Mathf.Atan2(normal.x, normal.y);
+            if (Mathf.Abs(inDirectionAngle - normalAngle) >= 90) normalAngle %= 180;
+
+            var incidence = inDirectionAngle - normalAngle;
+            var refractionAngle = Mathf.Asin((_refractiveIndex[n1] / _refractiveIndex[n2]) * Mathf.Sin(incidence));
+            var outDirectionAngle = (normalAngle + 180) % 360 - refractionAngle;
+            var outVector = AngleToVector(outDirectionAngle);
+            return outVector;
+        }
+
+        private Vector2 AngleToVector(float angleDegrees)
+        {
+            var angleRadians = Mathf.PI * angleDegrees / 180f;
+            var x = MathF.Cos(angleRadians);
+            var y = MathF.Sin(angleRadians);
+            return new Vector2(x, y);
+        }
         public void UpdateRaysPosition()
         {
             foreach (var ray in GetAllParentRays())

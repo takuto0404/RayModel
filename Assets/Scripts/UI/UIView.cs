@@ -1,8 +1,12 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using RaySim;
+using TMPro;
+using Unity.VisualScripting.Antlr3.Runtime;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -23,6 +27,14 @@ namespace Line
         [SerializeField] private Image rayMenuPanel;
         [SerializeField] private Button rayMenuButton;
         [SerializeField] private Button rayMenuBackButton;
+
+        [SerializeField] private GameObject selectView;
+        [SerializeField] private Button mirrorButton;
+        [SerializeField] private Button boundaryButton;
+        [SerializeField] private GameObject boundaryContent;
+        [SerializeField] private TMP_Text inText;
+        [SerializeField] private TMP_Text outText;
+        [SerializeField] private Button goButton;
 
         private List<LineInfoUI> _createdLine = new ();
         private List<RayInfoUI> _createdRay = new ();
@@ -153,6 +165,68 @@ namespace Line
             rayMenuPanel.enabled = false;
         }
 
+        public async UniTask<(LineType lineType, MaterialType[] materialTypes)> SelectLineType(CancellationToken ct)
+        {
+            selectView.SetActive(true);
+            var selecting = LineType.Mirror;
+            while (true)
+            {
+                if (selecting == LineType.Mirror)
+                {
+                    mirrorButton.GetComponent<Image>().color = new Color(0.8f, 0.5f, 0.5f);
+                    boundaryButton.GetComponent<Image>().color = Color.white;
+                }
+                else
+                {
+                    boundaryButton.GetComponent<Image>().color = new Color(0.8f,0.5f,0.5f);
+                    mirrorButton.GetComponent<Image>().color = Color.white;
+                }
+                var task1 = goButton.OnClickAsync(ct);
+                var task2 = mirrorButton.OnClickAsync(ct);
+                var task3 = boundaryButton.OnClickAsync(ct);
+                var result = await UniTask.WhenAny(task1, task2, task3);
+                if (result == 0)
+                {
+                    if (selecting == LineType.Mirror)
+                    {
+                        selectView.SetActive(false);
+                        return (selecting, new MaterialType[] { MaterialType.Air });
+                    }
+                    else
+                    {
+                        
+                        var inType = GetMaterialType(inText.text.Trim());
+                        var outType = GetMaterialType(outText.text.Trim());
+                        selectView.SetActive(false);
+                        return (selecting, new MaterialType[] { inType, outType });
+                    }
+                }
+                if (result == 1)
+                {
+                    boundaryContent.SetActive(false);
+                    selecting = LineType.Mirror;
+                }
+                else
+                {
+                    boundaryContent.SetActive(true);
+                    selecting = LineType.Boundary;
+                }
+            }
+        }
+
+        private MaterialType GetMaterialType(string text)
+        {
+            switch (text)
+            {
+                case "Water":
+                    return MaterialType.Water;
+                case "Air":
+                    return MaterialType.Air;
+                default:
+                    return MaterialType.Air;
+            }
+        }
+        
         public RayInfoUI MakeRayContents(List<RayInfo> rayInfos,RayInfo selecting)
         {
             RayInfoUI selected = null;

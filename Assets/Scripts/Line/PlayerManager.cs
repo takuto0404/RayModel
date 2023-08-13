@@ -150,7 +150,8 @@ namespace Line
                 else
                 {
                     var line = (LineInfo)newLineOrRay;
-                    line.Init(startPos,endPos,LineType.Mirror,new [] { MaterialType.Air },_lineId);
+                    var uiResult = await UIPresenter.Instance.SelectLineType(ct);
+                    line.Init(startPos,endPos,uiResult.lineType,uiResult.materialTypes,_lineId);
                     _lineId++;
                     LineManager.Instance.CreateLineAsUI(line);
                 

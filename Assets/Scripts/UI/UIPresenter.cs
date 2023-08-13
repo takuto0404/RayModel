@@ -4,6 +4,7 @@ using Default;
 using Line;
 using RaySim;
 using UnityEngine;
+using Cysharp.Threading.Tasks;
 
 namespace UI
 {
@@ -27,6 +28,11 @@ namespace UI
                 rayInfo = _selectingRay.rayInfo;
             }
             _beforeSelectRay = uiView.MakeRayContents(RayManager.Instance.GetAllParentRays(),rayInfo);
+        }
+
+        public async UniTask<(LineType lineType, MaterialType[] materialTypes)> SelectLineType(CancellationToken ct)
+        {
+            return await uiView.SelectLineType(ct);
         }
         private async UniTask SelectRayButtonAsync(CancellationToken ct)
         {
