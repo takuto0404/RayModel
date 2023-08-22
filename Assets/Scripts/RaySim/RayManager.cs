@@ -20,8 +20,8 @@ namespace RaySim
 
         private Dictionary<MaterialType, float> _refractiveIndex = new Dictionary<MaterialType, float>()
         {
-            { MaterialType.Water ,1.333f},
-            { MaterialType.Air ,1.000f}
+            { MaterialType.Water, 1.333f },
+            { MaterialType.Air, 1.000f }
         };
 
         public List<RayInfo> GetAllParentRays()
@@ -158,8 +158,7 @@ namespace RaySim
 
                     normal /= (normal - Vector2.zero).magnitude;
 
-                    
-                    
+
                     if (line.LineType == LineType.Mirror)
                     {
                         var reflect = Vector2.Reflect(ray.Vector, normal);
@@ -172,18 +171,20 @@ namespace RaySim
                         if (newRay.childNest > 40)
                         {
 #if UNITY_EDITOR
-    Debug.Log("反射が複雑になりすぎたため強制終了します。");                        
-    EditorApplication.isPlaying = false;
+                            Debug.Log("反射が複雑になりすぎたため強制終了します。");
+                            EditorApplication.isPlaying = false;
 #else
     Application.Quit();//ゲームプレイ終了
 #endif
                         }
+
                         ray.obstacleId = line.Id;
                         _reserve.Add(newRay);
                     }
                     else
                     {
-                        var refract = Refract(ray.Vector, normal, _refractiveIndex[line.MaterialTypes[0]],_refractiveIndex[line.MaterialTypes[1]]);
+                        var refract = Refract(ray.Vector, normal, _refractiveIndex[line.MaterialTypes[0]],
+                            _refractiveIndex[line.MaterialTypes[1]]);
                         var newRay = Instantiate(rayPrefab, canvasTransform);
                         newRay.Init(ray.EndPoint, refract, ray.EndPoint + refract);
                         newRay.ignoreLine = line;
@@ -193,17 +194,19 @@ namespace RaySim
                         if (newRay.childNest > 40)
                         {
 #if UNITY_EDITOR
-    Debug.Log("屈折が複雑になりすぎたため強制終了します。");                        
-    EditorApplication.isPlaying = false;
+                            Debug.Log("屈折が複雑になりすぎたため強制終了します。");
+                            EditorApplication.isPlaying = false;
 #else
     Application.Quit();//ゲームプレイ終了
 #endif
                         }
+
                         ray.obstacleId = line.Id;
                         _reserve.Add(newRay);
                     }
                 }
-                if(ray.child != null)UpdateRayPosition(ray.child);
+
+                if (ray.child != null) UpdateRayPosition(ray.child);
             }
             else
             {
@@ -221,59 +224,39 @@ namespace RaySim
             });
         }
 
-        [MenuItem("Original/A")]
-        private static void A()
+
+        private Vector2 Refract(Vector2 inDirection, Vector2 inNormal, float refractiveIndexIn,
+            float refractiveIndexOut)
         {
-            Instance.Refract(new Vector2(1,-1), Vector2.down, 1.333f, 1.0f);
-        }
-        
-        private Vector2 Refract(Vector2 inDirection, Vector2 inNormal,float refractiveIndex1,float refractiveIndex2)
-        {
-            var inDirectionAngle = Mathf.Atan2(inDirection.y,inDirection.x);
-            var normalAngle = Mathf.Atan2(inNormal.y, inNormal.x);
-            Debug.Log(inDirectionAngle);
-            Vector2 plusMinus;
-            var diff = (inDirectionAngle - normalAngle) * Mathf.Rad2Deg;
-            if (diff < -180) diff %= -180;
-            if (diff >= 180) diff %= 180;
-            if (diff > 90)
+            var inDirectionAngle = Mathf.Atan2(inDirection.y, inDirection.x) * Mathf.Rad2Deg;
+            var inNormalAngle = Mathf.Atan2(inNormal.y, inNormal.x) * Mathf.Rad2Deg;
+            var rotationAmount = inNormalAngle + 90;
+
+            var rotatedInDirectionAngle = inDirectionAngle + rotationAmount;
+
+            var isMoreThan90 = rotatedInDirectionAngle > 90;
+            var incidence = Mathf.Abs(rotatedInDirectionAngle - 90);
+
+            var refractAngle =
+                Mathf.Asin(refractiveIndexIn / refractiveIndexOut * Mathf.Sin(incidence * Mathf.Deg2Rad)) *
+                Mathf.Rad2Deg;
+            if (double.IsNaN(refractAngle))
             {
-                Debug.Log("A");
-                inDirectionAngle = 180 * Mathf.Deg2Rad - inDirectionAngle;
-                plusMinus = new Vector2(-1, -1);
+                var result = Vector2.Reflect(inDirection, inNormal);
+                return result;
             }
-            else if (diff > 0)
+
+            float rotatedRefractAngle;
+            if (isMoreThan90)
             {
-                plusMinus = new Vector2(1, -1);
-            }
-            else if (diff > -90)
-            {
-                plusMinus = new Vector2(1, 1);
+                rotatedRefractAngle = 90 + refractAngle - rotationAmount;
             }
             else
             {
-                inDirectionAngle = -180 * Mathf.Deg2Rad - inDirectionAngle;
-                plusMinus = new Vector2(-1, 1);
+                rotatedRefractAngle = 90 - refractAngle - rotationAmount;
             }
-            var incidenceAngle = -inDirectionAngle - normalAngle;
-            var isMinus = false;
-            if (incidenceAngle < 0)
-            {
-                incidenceAngle *= -1;
-                isMinus = true;
-            }
-            var refractionAngle = Mathf.Asin(refractiveIndex1 / refractiveIndex2 * Mathf.Sin(incidenceAngle)) * Mathf.Rad2Deg;
-            if (float.IsNaN(refractionAngle))
-            {
-                return Vector2.Reflect(inDirection, inNormal);
-            }
-            
-            var outDirectionAngle = -normalAngle * Mathf.Rad2Deg - refractionAngle;
-            var outVector = AngleToVector(outDirectionAngle);
-            if (isMinus) outVector *= -1;
-            outVector *= plusMinus;
-            Debug.Log($"{inDirectionAngle * Mathf.Rad2Deg}度で入射、{normalAngle * Mathf.Rad2Deg}度の法線ベクトルで、{incidenceAngle * Mathf.Rad2Deg}度の入射角、{refractionAngle}どの屈折角、{outDirectionAngle}={outVector}方向に屈折します。");
-            return outVector;
+
+            return AngleToVector(rotatedRefractAngle);
         }
 
         private Vector2 AngleToVector(float angleDegrees)
@@ -282,6 +265,7 @@ namespace RaySim
             var y = Mathf.Sin(angleDegrees * Mathf.Deg2Rad);
             return new Vector2(x, y);
         }
+
         public void UpdateRaysPosition()
         {
             foreach (var ray in GetAllParentRays())

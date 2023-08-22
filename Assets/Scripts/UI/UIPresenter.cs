@@ -4,7 +4,6 @@ using Default;
 using Line;
 using RaySim;
 using UnityEngine;
-using Cysharp.Threading.Tasks;
 
 namespace UI
 {
@@ -15,6 +14,7 @@ namespace UI
         private LineInfoUI _selectingLine = null;
         private RayInfoUI _beforeSelectRay = null;
         private RayInfoUI _selectingRay = null;
+        [HideInInspector] public bool isOpeningWindow;
 
         public void SetMousePointerPosition(Vector2 pos)
         {
@@ -32,7 +32,10 @@ namespace UI
 
         public async UniTask<(LineType lineType, MaterialType[] materialTypes)> SelectLineType(CancellationToken ct)
         {
-            return await uiView.SelectLineType(ct);
+            isOpeningWindow = true;
+            var result = await uiView.SelectLineType(ct);
+            isOpeningWindow = false;
+            return result;
         }
         private async UniTask SelectRayButtonAsync(CancellationToken ct)
         {
@@ -106,7 +109,6 @@ namespace UI
                 }
                 _selectingLine.SelectColor();
                 if (ct.IsCancellationRequested) return;
-                
             }
         }
         public async UniTask LineUITaskAsync(CancellationToken ct)

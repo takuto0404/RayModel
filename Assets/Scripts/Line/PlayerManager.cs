@@ -41,6 +41,7 @@ namespace Line
             {
                 await foreach (var _ in UniTaskAsyncEnumerable.EveryUpdate().WithCancellation(ct))
                 {
+                    if(UIPresenter.Instance.isOpeningWindow)continue;
                     var mousePos = InputProvider.Instance.mousePosition;
                     var mousePoint = LineGrid.Instance.GetMousePoint();
                     UIPresenter.Instance.SetMousePointerPosition(mousePoint);
