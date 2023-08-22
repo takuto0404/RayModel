@@ -229,11 +229,10 @@ namespace RaySim
             float refractiveIndexOut)
         {
             var inDirectionAngle = Mathf.Atan2(inDirection.y, inDirection.x) * Mathf.Rad2Deg;
+            
             var inNormalAngle = Mathf.Atan2(inNormal.y, inNormal.x) * Mathf.Rad2Deg;
-            var rotationAmount = inNormalAngle + 90;
-
-            var rotatedInDirectionAngle = inDirectionAngle + rotationAmount;
-
+            
+            var rotatedInDirectionAngle = inDirectionAngle + (-90 - inNormalAngle);
             var isMoreThan90 = rotatedInDirectionAngle > 90;
             var incidence = Mathf.Abs(rotatedInDirectionAngle - 90);
 
@@ -247,15 +246,23 @@ namespace RaySim
             }
 
             float rotatedRefractAngle;
+            var oppositeNormalVector = inNormal * new Vector2(-1, -1);
+            var oppositeNormal = Mathf.Atan2(oppositeNormalVector.y,oppositeNormalVector.x) * Mathf.Rad2Deg;
+            if (oppositeNormal < 0)
+            {
+                oppositeNormal = 180 - (-180 - oppositeNormal);
+            }
+            
             if (isMoreThan90)
             {
-                rotatedRefractAngle = 90 + refractAngle - rotationAmount;
+                rotatedRefractAngle = oppositeNormal + refractAngle;
             }
             else
             {
-                rotatedRefractAngle = 90 - refractAngle - rotationAmount;
+                rotatedRefractAngle = oppositeNormal - refractAngle;
             }
 
+            rotatedRefractAngle %= 360;
             return AngleToVector(rotatedRefractAngle);
         }
 
