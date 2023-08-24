@@ -18,10 +18,26 @@ namespace RaySim
         private List<RayInfo> _reserve = new();
         private List<RayInfo> _destroyReserve = new();
 
-        private Dictionary<MaterialType, float> _refractiveIndex = new Dictionary<MaterialType, float>()
+        private readonly Dictionary<int,Dictionary<MaterialType, float>> _refractiveIndex = new ()
         {
-            { MaterialType.Water, 1.333f },
-            { MaterialType.Air, 1.000f }
+            {0,new Dictionary<MaterialType,float>()
+            {
+                { MaterialType.Water, 1.338f },
+                { MaterialType.Air, 1.000f },
+                { MaterialType.Oil ,1.408f}
+            }},
+            {1,new Dictionary<MaterialType,float>()
+            {
+                { MaterialType.Water, 1.332f },
+                { MaterialType.Air, 1.000f },
+                { MaterialType.Oil ,1.400f}
+            }},
+            {2,new Dictionary<MaterialType,float>()
+            {
+                { MaterialType.Water, 1.331f },
+                { MaterialType.Air, 1.000f },
+                { MaterialType.Oil ,1.397f}
+            }}
         };
 
         public List<RayInfo> GetAllParentRays()
@@ -93,7 +109,7 @@ namespace RaySim
                     destroyed.ForEach(_destroyReserve.Add);
                 }
 
-                if (ray.child == null)
+                if (ray.children.Count == 0)
                 {
                     ray.EndPoint = obstacle.pos;
 
@@ -125,10 +141,12 @@ namespace RaySim
                         {
                             normal = Vector2.right;
                             isIn = true;
+                            Debug.Log("Air");
                         }
                         else
                         {
                             normal = Vector2.left;
+                            Debug.Log("Water");
                         }
                     }
                     else if ((int)line.StartPoint.y == (int)line.EndPoint.y)
@@ -136,11 +154,11 @@ namespace RaySim
                         if (ray.StartPoint.y > obstacle.pos.y)
                         {
                             normal = Vector2.up;
-                            isIn = true;
                         }
                         else
                         {
                             normal = Vector2.down;
+                            isIn = true;
                         }
                     }
                     else
@@ -161,13 +179,7 @@ namespace RaySim
 
                     if (line.LineType == LineType.Mirror)
                     {
-                        var reflect = Vector2.Reflect(ray.Vector, normal);
-                        var newRay = Instantiate(rayPrefab, canvasTransform);
-                        newRay.Init(ray.EndPoint, reflect, ray.EndPoint + reflect);
-                        newRay.ignoreLine = line;
-                        ray.child = newRay;
-                        newRay.isChild = true;
-                        newRay.childNest = ray.childNest + 1;
+                        var newRay = CreateNewMirrorRay(ray, line, normal,ray.rayColor);
                         if (newRay.childNest > 40)
                         {
 #if UNITY_EDITOR
@@ -183,30 +195,42 @@ namespace RaySim
                     }
                     else
                     {
-                        var refract = Refract(ray.Vector, normal, _refractiveIndex[line.MaterialTypes[0]],
-                            _refractiveIndex[line.MaterialTypes[1]]);
-                        var newRay = Instantiate(rayPrefab, canvasTransform);
-                        newRay.Init(ray.EndPoint, refract, ray.EndPoint + refract);
-                        newRay.ignoreLine = line;
-                        ray.child = newRay;
-                        newRay.isChild = true;
-                        newRay.childNest = ray.childNest + 1;
-                        if (newRay.childNest > 40)
+                        (bool isRefract, Vector2 refract) result;
+                        if (isIn)
                         {
+                            result = Refract(ray.Vector, normal, _refractiveIndex[ray.rayColor][line.MaterialTypes[0]],
+                                _refractiveIndex[ray.rayColor][line.MaterialTypes[1]]);
+                        }
+                        else
+                        {
+                            result = Refract(ray.Vector, normal, _refractiveIndex[ray.rayColor][line.MaterialTypes[1]],
+                                _refractiveIndex[ray.rayColor][line.MaterialTypes[0]]);
+                        }
+
+                        if (result.isRefract)
+                        {
+                            var refract = result.refract;
+                            var newRay = CreateNewBoundaryRay(ray, line, refract,ray.rayColor);
+                            if (newRay.childNest > 40)
+                            {
 #if UNITY_EDITOR
-                            Debug.Log("屈折が複雑になりすぎたため強制終了します。");
-                            EditorApplication.isPlaying = false;
+                                Debug.Log("屈折が複雑になりすぎたため強制終了します。");
+                                EditorApplication.isPlaying = false;
 #else
     Application.Quit();//ゲームプレイ終了
 #endif
+                            }
+
+                            _reserve.Add(newRay);
                         }
 
+                        var newMirrorRay = CreateNewMirrorRay(ray, line, normal,ray.rayColor);
+                        _reserve.Add(newMirrorRay);
                         ray.obstacleId = line.Id;
-                        _reserve.Add(newRay);
                     }
                 }
 
-                if (ray.child != null) UpdateRayPosition(ray.child);
+                if (ray.children != null) ray.children.ForEach(UpdateRayPosition);
             }
             else
             {
@@ -224,14 +248,37 @@ namespace RaySim
             });
         }
 
+        private RayInfo CreateNewMirrorRay(RayInfo ray, LineInfo line, Vector2 normal,int color)
+        {
+            var reflect = Vector2.Reflect(ray.Vector, normal);
+            var newRay = Instantiate(rayPrefab, canvasTransform);
+            newRay.Init(ray.EndPoint, reflect, ray.EndPoint + reflect,color);
+            newRay.ignoreLine = line;
+            ray.children.Add(newRay);
+            newRay.isChild = true;
+            newRay.childNest = ray.childNest + 1;
+            return newRay;
+        }
 
-        private Vector2 Refract(Vector2 inDirection, Vector2 inNormal, float refractiveIndexIn,
+        private RayInfo CreateNewBoundaryRay(RayInfo ray, LineInfo line, Vector2 refract,int color)
+        {
+            var newRay = Instantiate(rayPrefab, canvasTransform);
+            newRay.Init(ray.EndPoint, refract, ray.EndPoint + refract,color);
+            newRay.ignoreLine = line;
+            ray.children.Add(newRay);
+            newRay.isChild = true;
+            newRay.childNest = ray.childNest + 1;
+            return newRay;
+        }
+
+        private (bool isRefract, Vector2 refract) Refract(Vector2 inDirection, Vector2 inNormal,
+            float refractiveIndexIn,
             float refractiveIndexOut)
         {
             var inDirectionAngle = Mathf.Atan2(inDirection.y, inDirection.x) * Mathf.Rad2Deg;
-            
+
             var inNormalAngle = Mathf.Atan2(inNormal.y, inNormal.x) * Mathf.Rad2Deg;
-            
+
             var rotatedInDirectionAngle = inDirectionAngle + (-90 - inNormalAngle);
             var isMoreThan90 = rotatedInDirectionAngle > 90;
             var incidence = Mathf.Abs(rotatedInDirectionAngle - 90);
@@ -241,18 +288,17 @@ namespace RaySim
                 Mathf.Rad2Deg;
             if (double.IsNaN(refractAngle))
             {
-                var result = Vector2.Reflect(inDirection, inNormal);
-                return result;
+                return (false, Vector2.zero);
             }
 
             float rotatedRefractAngle;
             var oppositeNormalVector = inNormal * new Vector2(-1, -1);
-            var oppositeNormal = Mathf.Atan2(oppositeNormalVector.y,oppositeNormalVector.x) * Mathf.Rad2Deg;
+            var oppositeNormal = Mathf.Atan2(oppositeNormalVector.y, oppositeNormalVector.x) * Mathf.Rad2Deg;
             if (oppositeNormal < 0)
             {
                 oppositeNormal = 180 - (-180 - oppositeNormal);
             }
-            
+
             if (isMoreThan90)
             {
                 rotatedRefractAngle = oppositeNormal + refractAngle;
@@ -263,7 +309,7 @@ namespace RaySim
             }
 
             rotatedRefractAngle %= 360;
-            return AngleToVector(rotatedRefractAngle);
+            return (true, AngleToVector(rotatedRefractAngle));
         }
 
         private Vector2 AngleToVector(float angleDegrees)

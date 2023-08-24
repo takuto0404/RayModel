@@ -36,6 +36,10 @@ namespace Line
         [SerializeField] private TMP_InputField outText;
         [SerializeField] private Button goButton;
 
+        [SerializeField] private GameObject rayColorView;
+        [SerializeField] private TMP_InputField colorText;
+        [SerializeField] private Button goRayButton;
+
         private List<LineInfoUI> _createdLine = new ();
         private List<RayInfoUI> _createdRay = new ();
         private UniTaskCompletionSource _uts = new ();
@@ -70,6 +74,17 @@ namespace Line
         public void SetMousePointerPosition(Vector2 position)
         {
             point.rectTransform.position = position;
+        }
+
+        public async UniTask<int> RayColorSelectAsync(CancellationToken ct)
+        {
+            rayColorView.SetActive(true);
+            colorText.text = "";
+            await goRayButton.OnClickAsync(ct);
+            rayColorView.SetActive(false);
+            var wasCorrect = int.TryParse(colorText.text,out var num);
+            if (!wasCorrect) num = 0;
+            return num;
         }
 
         public async UniTask LineMenuButtonOnClickAsync(CancellationToken ct)
@@ -193,7 +208,7 @@ namespace Line
                     if (selecting == LineType.Mirror)
                     {
                         selectView.SetActive(false);
-                        return (selecting, new MaterialType[] { MaterialType.Air });
+                        return (selecting, new [] { MaterialType.Air });
                     }
                     else
                     {
@@ -201,7 +216,7 @@ namespace Line
                         var inType = GetMaterialType(inText.text.Trim());
                         var outType = GetMaterialType(outText.text.Trim());
                         selectView.SetActive(false);
-                        return (selecting, new MaterialType[] { inType, outType });
+                        return (selecting, new [] { inType, outType });
                     }
                 }
                 if (result == 1)

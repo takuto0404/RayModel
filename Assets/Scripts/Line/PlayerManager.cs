@@ -142,7 +142,8 @@ namespace Line
                 if (result == 0)
                 {
                     var ray = (RayInfo)newLineOrRay;
-                    ray.Init(startPos,endPos - startPos,endPos);
+                    var color = await UIPresenter.Instance.SelectRayColorAsync(ct);
+                    ray.Init(startPos,endPos - startPos,endPos,color);
                     RayManager.Instance.CreateRay(ray);
                 
                     UIPresenter.Instance.MakeRayContents();

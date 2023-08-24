@@ -16,6 +16,14 @@ namespace UI
         private RayInfoUI _selectingRay = null;
         [HideInInspector] public bool isOpeningWindow;
 
+
+        public async UniTask<int> SelectRayColorAsync(CancellationToken ct)
+        {
+            isOpeningWindow = true;
+            var result = await uiView.RayColorSelectAsync(ct);
+            isOpeningWindow = false;
+            return result;
+        }
         public void SetMousePointerPosition(Vector2 pos)
         {
             uiView.SetMousePointerPosition(pos);
