@@ -31,6 +31,7 @@ namespace Line
         [SerializeField] private GameObject selectView;
         [SerializeField] private Button mirrorButton;
         [SerializeField] private Button boundaryButton;
+        [SerializeField] private Button absorbButton;
         [SerializeField] private GameObject boundaryContent;
         [SerializeField] private TMP_InputField inText;
         [SerializeField] private TMP_InputField outText;
@@ -193,16 +194,25 @@ namespace Line
                 {
                     mirrorButton.GetComponent<Image>().color = new Color(0.8f, 0.5f, 0.5f);
                     boundaryButton.GetComponent<Image>().color = Color.white;
+                    absorbButton.GetComponent<Image>().color = Color.white;
                 }
-                else
+                else if(selecting == LineType.Boundary)
                 {
                     boundaryButton.GetComponent<Image>().color = new Color(0.8f,0.5f,0.5f);
                     mirrorButton.GetComponent<Image>().color = Color.white;
+                    absorbButton.GetComponent<Image>().color = Color.white;
+                }
+                else
+                {
+                    absorbButton.GetComponent<Image>().color = new Color(0.8f,0.5f,0.5f);
+                    mirrorButton.GetComponent<Image>().color = Color.white;
+                    boundaryButton.GetComponent<Image>().color = Color.white;
                 }
                 var task1 = goButton.OnClickAsync(ct);
                 var task2 = mirrorButton.OnClickAsync(ct);
                 var task3 = boundaryButton.OnClickAsync(ct);
-                var result = await UniTask.WhenAny(task1, task2, task3);
+                var task4 = absorbButton.OnClickAsync(ct);
+                var result = await UniTask.WhenAny(task1, task2, task3,task4);
                 if (result == 0)
                 {
                     if (selecting == LineType.Mirror)
@@ -210,7 +220,7 @@ namespace Line
                         selectView.SetActive(false);
                         return (selecting, new [] { MaterialType.Air });
                     }
-                    else
+                    if(selecting == LineType.Boundary)
                     {
                         
                         var inType = GetMaterialType(inText.text.Trim());
@@ -218,31 +228,31 @@ namespace Line
                         selectView.SetActive(false);
                         return (selecting, new [] { inType, outType });
                     }
+                    selectView.SetActive(false);
+                    return (selecting, new[] { MaterialType.Air });
                 }
                 if (result == 1)
                 {
                     boundaryContent.SetActive(false);
                     selecting = LineType.Mirror;
                 }
-                else
+                else if(result == 2)
                 {
                     boundaryContent.SetActive(true);
                     selecting = LineType.Boundary;
+                }
+                else if(result == 3)
+                {
+                    boundaryContent.SetActive(false);
+                    selecting = LineType.Absorb;
                 }
             }
         }
 
         private MaterialType GetMaterialType(string text)
         {
-            switch (text)
-            {
-                case "Water":
-                    return MaterialType.Water;
-                case "Air":
-                    return MaterialType.Air;
-                default:
-                    return MaterialType.Air;
-            }
+            Enum.TryParse(typeof(MaterialType),text,out var materialType);
+            return (MaterialType)materialType;
         }
         
         public RayInfoUI MakeRayContents(List<RayInfo> rayInfos,RayInfo selecting)

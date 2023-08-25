@@ -18,26 +18,35 @@ namespace RaySim
         private List<RayInfo> _reserve = new();
         private List<RayInfo> _destroyReserve = new();
 
-        private readonly Dictionary<int,Dictionary<MaterialType, float>> _refractiveIndex = new ()
+        private readonly Dictionary<int, Dictionary<MaterialType, float>> _refractiveIndex = new()
         {
-            {0,new Dictionary<MaterialType,float>()
             {
-                { MaterialType.Water, 1.338f },
-                { MaterialType.Air, 1.000f },
-                { MaterialType.Oil ,1.408f}
-            }},
-            {1,new Dictionary<MaterialType,float>()
+                0, new Dictionary<MaterialType, float>()
+                {
+                    // { MaterialType.Water, 1.338f },
+                    { MaterialType.Water, 1.5f },
+                    { MaterialType.Air, 1.000f },
+                    { MaterialType.Oil, 1.408f }
+                }
+            },
             {
-                { MaterialType.Water, 1.332f },
-                { MaterialType.Air, 1.000f },
-                { MaterialType.Oil ,1.400f}
-            }},
-            {2,new Dictionary<MaterialType,float>()
+                1, new Dictionary<MaterialType, float>()
+                {
+                    // { MaterialType.Water, 1.332f },
+                    { MaterialType.Water, 1.3f },
+                    { MaterialType.Air, 1.000f },
+                    { MaterialType.Oil, 1.400f }
+                }
+            },
             {
-                { MaterialType.Water, 1.331f },
-                { MaterialType.Air, 1.000f },
-                { MaterialType.Oil ,1.397f}
-            }}
+                2, new Dictionary<MaterialType, float>()
+                {
+                    // { MaterialType.Water, 1.331f },
+                    { MaterialType.Water, 1.1f },
+                    { MaterialType.Air, 1.000f },
+                    { MaterialType.Oil, 1.397f }
+                }
+            }
         };
 
         public List<RayInfo> GetAllParentRays()
@@ -179,7 +188,7 @@ namespace RaySim
 
                     if (line.LineType == LineType.Mirror)
                     {
-                        var newRay = CreateNewMirrorRay(ray, line, normal,ray.rayColor);
+                        var newRay = CreateNewMirrorRay(ray, line, normal, ray.rayColor);
                         if (newRay.childNest > 40)
                         {
 #if UNITY_EDITOR
@@ -193,7 +202,7 @@ namespace RaySim
                         ray.obstacleId = line.Id;
                         _reserve.Add(newRay);
                     }
-                    else
+                    else if (line.LineType == LineType.Boundary)
                     {
                         (bool isRefract, Vector2 refract) result;
                         if (isIn)
@@ -210,7 +219,9 @@ namespace RaySim
                         if (result.isRefract)
                         {
                             var refract = result.refract;
-                            var newRay = CreateNewBoundaryRay(ray, line, refract,ray.rayColor);
+                            var newRay = CreateNewBoundaryRay(ray, line, refract, ray.rayColor);
+                            var color = newRay.GetUGUILineRenderer().color;
+                            newRay.GetUGUILineRenderer().color = color;
                             if (newRay.childNest > 40)
                             {
 #if UNITY_EDITOR
@@ -224,7 +235,24 @@ namespace RaySim
                             _reserve.Add(newRay);
                         }
 
-                        var newMirrorRay = CreateNewMirrorRay(ray, line, normal,ray.rayColor);
+                        var newMirrorRay = CreateNewMirrorRay(ray, line, normal, ray.rayColor);
+                        var colour = newMirrorRay.GetUGUILineRenderer().color;
+                        newMirrorRay.GetUGUILineRenderer().color = colour;
+                        if (line.LineType == LineType.Boundary && result.isRefract)
+                        {
+                            newMirrorRay.GetUGUILineRenderer().color = colour;
+                        }
+
+                        if (newMirrorRay.childNest > 40)
+                        {
+#if UNITY_EDITOR
+                            Debug.Log("反射が複雑になりすぎたため強制終了します。");
+                            EditorApplication.isPlaying = false;
+#else
+    Application.Quit();//ゲームプレイ終了
+#endif
+                        }
+
                         _reserve.Add(newMirrorRay);
                         ray.obstacleId = line.Id;
                     }
@@ -248,11 +276,11 @@ namespace RaySim
             });
         }
 
-        private RayInfo CreateNewMirrorRay(RayInfo ray, LineInfo line, Vector2 normal,int color)
+        private RayInfo CreateNewMirrorRay(RayInfo ray, LineInfo line, Vector2 normal, int color)
         {
             var reflect = Vector2.Reflect(ray.Vector, normal);
             var newRay = Instantiate(rayPrefab, canvasTransform);
-            newRay.Init(ray.EndPoint, reflect, ray.EndPoint + reflect,color);
+            newRay.Init(ray.EndPoint, reflect, ray.EndPoint + reflect, color);
             newRay.ignoreLine = line;
             ray.children.Add(newRay);
             newRay.isChild = true;
@@ -260,10 +288,10 @@ namespace RaySim
             return newRay;
         }
 
-        private RayInfo CreateNewBoundaryRay(RayInfo ray, LineInfo line, Vector2 refract,int color)
+        private RayInfo CreateNewBoundaryRay(RayInfo ray, LineInfo line, Vector2 refract, int color)
         {
             var newRay = Instantiate(rayPrefab, canvasTransform);
-            newRay.Init(ray.EndPoint, refract, ray.EndPoint + refract,color);
+            newRay.Init(ray.EndPoint, refract, ray.EndPoint + refract, color);
             newRay.ignoreLine = line;
             ray.children.Add(newRay);
             newRay.isChild = true;
@@ -309,6 +337,8 @@ namespace RaySim
             }
 
             rotatedRefractAngle %= 360;
+
+
             return (true, AngleToVector(rotatedRefractAngle));
         }
 
@@ -333,7 +363,7 @@ namespace RaySim
                 UIPresenter.Instance.MakeRayContents();
                 UpdateRaysPosition();
             }
-
+            Debug.Log(_rayObjects.Count);
             if (_destroyReserve.Count > 0)
             {
                 _destroyReserve.ForEach(item => _rayObjects.Remove(item));

@@ -52,22 +52,33 @@ namespace Line
                     var startPos = lineInfo.StartPoint - LineGrid.Instance.totalMisalignment;
                     var endPos = lineInfo.EndPoint - LineGrid.Instance.totalMisalignment;
                     lineInfo.GetUGUILineRenderer().SetPositions(new[] { startPos, endPos });
-                    
-                    var vector = startPos - endPos;
-                    var angle = Mathf.Atan2(vector.y, vector.x) * Mathf.Rad2Deg;
-                    if (angle > 90)
-                    {
-                        angle = -90 + (angle - 90);
-                    }
-                    else if (angle < -90)
-                    {
-                        angle = 90 - (-90 - angle);
-                    }
 
-                    var p = vector / vector.magnitude * 30;
-                    var textVector = new Vector2(p.y,p.x);
-                    var textPos = startPos - vector / 2;
-                    lineInfo.SetMaterialText(angle,textPos + textVector,textPos - textVector);
+                    if (lineInfo.LineType == LineType.Boundary)
+                    {
+                        var vector = startPos - endPos;
+                        var angle = Mathf.Atan2(vector.y, vector.x) * Mathf.Rad2Deg;
+                        if (angle > 90)
+                        {
+                            angle = -90 + (angle - 90);
+                        }
+                        else if (angle < -90)
+                        {
+                            angle = 90 - (-90 - angle);
+                        }
+
+                        var p = vector / vector.magnitude * 30;
+                        if (p.x < 0) p *= new Vector2(-1, -1);
+                        var textVector = new Vector2(p.y,p.x);
+                        var textPos = startPos - vector / 2;
+                        if (angle > 0)
+                        {
+                            lineInfo.SetMaterialText(angle,textPos + textVector,textPos - textVector);
+                        }
+                        else
+                        {
+                            lineInfo.SetMaterialText(angle,textPos - textVector,textPos + textVector);
+                        }
+                    }
                 }
             }
         }
